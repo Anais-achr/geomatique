@@ -14,7 +14,7 @@
   <script src="./utils.js"></script>
   <style>
     #map {
-      width: 100%;
+      width: 50%;
       height: 600px;
     }
 
@@ -40,25 +40,23 @@
 
     window.onload = async () => {
       try {
-        // Initialisation de la carte
         map = L.map('map', {
           center: [48.4, 2.5],
           zoom: 6
         });
 
-        // Ajouter les tuiles de fond
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
           subdomains: 'abcd',
           maxZoom: 20
         }).addTo(map);
 
-        // Charger les données GeoJSON
-        const geojsonResponse = await fetch("gares-de-voyageurs.geojson");
+        const docElem = document.getElementById("doc");
+        console.log(docElem)
+        const geojsonResponse = await fetch("liste-des-gares.geojson");
         const geojsonData = await geojsonResponse.json();
         console.log(geojsonData);
 
-        // Charger les horaires à partir du CSV
        const horairesCSV = await fetchCSV("horaires-des-gares1.csv");
        const horaires = horairesCSV.reduce((acc, current) => {
         const gare = current.gare?.trim();
@@ -70,7 +68,6 @@
        }, {})
 
 
-        // Ajouter les horaires aux données GeoJSON
         geojsonData.features.forEach(feature => {
           const libelle = feature.properties.nom
           const gare = horaires[libelle];
@@ -85,10 +82,15 @@
         });
 
 
-        // Ajouter la couche GeoJSON
         geojsonLayer = L.geoJSON(geojsonData, {
           onEachFeature: (feature, layer) => {
-            let popupContent = `<strong>${feature.properties.nom}</strong>`;
+            layer.on('click', () => {
+              let newDiv = document.createElement('div')
+              newDiv.textContent = "coucou"
+              console.log(newDiv)
+              docElem.appendChild(newDiv)
+            })
+            /* let popupContent = `<strong>${feature.properties.nom}</strong>`;
             popupContent += `<br><strong>Horaires :</strong><ul>`;
             
             if (feature.properties.horaires) {
@@ -114,7 +116,8 @@
             popupContent += `</ul>`;
             
 
-            layer.bindPopup(popupContent);
+            layer.bindPopup(popupContent); */
+            
           },
           pointToLayer: (feature, latlng) => {
             return L.circleMarker(latlng, {
@@ -128,7 +131,6 @@
           }
         }).addTo(map);
 
-        // Remplir la liste des départements
         const departmentSelect = document.getElementById('department-select');
         const stationSelect = document.getElementById('station-select');
         const departments = [...new Set(geojsonData.features.map(f => f.properties.departemen))].sort();
@@ -139,7 +141,6 @@
           departmentSelect.appendChild(option);
         });
 
-        // Ajouter un écouteur pour filtrer par département
         departmentSelect.addEventListener('change', (event) => {
           const department = event.target.value;
           if (geojsonLayer) {
@@ -175,17 +176,14 @@
             }
           }).addTo(map); */
 
-          // Centrer la carte sur les gares filtrées
           const bounds = geojsonLayer.getBounds();
           if (bounds.isValid()) {
             map.fitBounds(bounds);
           }
 
-          // Mettre à jour la liste des gares
           updateStationList(filteredData.features);
         });
 
-        // Fonction pour mettre à jour la liste des gares
         function updateStationList(features) {
           stationSelect.innerHTML = '<option value="">Choisissez une gare</option>';
           stationSelect.style.display = features.length > 0 ? 'block' : 'none';
@@ -197,7 +195,6 @@
             stationSelect.appendChild(option);
           });
 
-          // Centrer la carte sur la gare sélectionnée
           stationSelect.addEventListener('change', (event) => {
             const coordinates = JSON.parse(event.target.value);
             if (coordinates) {
@@ -208,7 +205,6 @@
 
         
 
-        // Fonction pour charger le CSV
         async function fetchCSV(filePath) {
           const response = await fetch(filePath);
           const text = await response.text();
@@ -223,14 +219,17 @@
 </head>
 
 <body>
-  <div id="controls">
-    <label for="department-select">Choisir un département : </label>
-    <select id="department-select">
-      <option value="all">Tous</option>
-    </select>
-    <select id="station-select"></select>
+  <div id="doc">
+    <div id="controls">
+      <label for="department-select">Choisir un département : </label>
+      <select id="department-select">
+        <option value="all">Tous</option>
+      </select>
+      <select id="station-select"></select>
+    </div>
+    <div id="map"></div>
   </div>
-  <div id="map"></div>
+ 
 </body>
 
 </html>
