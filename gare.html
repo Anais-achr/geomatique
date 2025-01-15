@@ -12,222 +12,65 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <script src="./utils.js"></script>
-  <style>
-    #map {
-      width: 50%;
-      height: 600px;
-    }
+  <script src="./gare.js"></script>
+  <link rel="stylesheet" href="style.css">
 
-    #controls {
-      margin: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    #department-select,
-    #station-select {
-      padding: 5px;
-      font-size: 14px;
-    }
-
-    #station-select {
-      display: none;
-    }
-  </style>
-  <script>
-    let map, geojsonLayer;
-
-    window.onload = async () => {
-      try {
-        map = L.map('map', {
-          center: [48.4, 2.5],
-          zoom: 6
-        });
-
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
-          subdomains: 'abcd',
-          maxZoom: 20
-        }).addTo(map);
-
-        const docElem = document.getElementById("doc");
-        console.log(docElem)
-        const geojsonResponse = await fetch("liste-des-gares.geojson");
-        const geojsonData = await geojsonResponse.json();
-        console.log(geojsonData);
-
-       const horairesCSV = await fetchCSV("horaires-des-gares1.csv");
-       const horaires = horairesCSV.reduce((acc, current) => {
-        const gare = current.gare?.trim();
-        if(!acc[gare]){
-          acc[gare] = []
-        }
-        acc[gare].push(current);
-        return acc;
-       }, {})
-
-
-        geojsonData.features.forEach(feature => {
-          const libelle = feature.properties.nom
-          const gare = horaires[libelle];
-          if(gare){
-            feature.properties.horaires = gare.map(j => ({
-              jour: j.jour_de_la_semaine,
-              horaireNormaux: j.horaire_en_jour_normal,
-              horaireFerie: j.horaire_en_jour_ferie
-            }));
-          }
-          //console.log(feature.properties.horaires)
-        });
-
-
-        geojsonLayer = L.geoJSON(geojsonData, {
-          onEachFeature: (feature, layer) => {
-            layer.on('click', () => {
-              let newDiv = document.createElement('div')
-              newDiv.textContent = "coucou"
-              console.log(newDiv)
-              docElem.appendChild(newDiv)
-            })
-            /* let popupContent = `<strong>${feature.properties.nom}</strong>`;
-            popupContent += `<br><strong>Horaires :</strong><ul>`;
-            
-            if (feature.properties.horaires) {
-              const lignes = trieJourSemaine(Object.entries(feature.properties.horaires));
-              //console.log(lignes);
-              lignes.forEach(([key, horaires]) => {
-            
-            const ligneHTML = `
-              <div>
-                <strong>${horaires.jour}</strong> :
-                <ul>
-                  <li>${horaires.horaireNormaux}</li>
-                </ul>
-              </div>
-            `;
-              popupContent += ligneHTML
-          })
-
-      
-            } else {
-              popupContent += `Horraire indisponibles`;
-            }
-            popupContent += `</ul>`;
-            
-
-            layer.bindPopup(popupContent); */
-            
-          },
-          pointToLayer: (feature, latlng) => {
-            return L.circleMarker(latlng, {
-              radius: 6,
-              fillColor: "#007bff",
-              color: "#000",
-              weight: 1,
-              opacity: 1,
-              fillOpacity: 0.8
-            });
-          }
-        }).addTo(map);
-
-        const departmentSelect = document.getElementById('department-select');
-        const stationSelect = document.getElementById('station-select');
-        const departments = [...new Set(geojsonData.features.map(f => f.properties.departemen))].sort();
-        departments.forEach(dept => {
-          const option = document.createElement('option');
-          option.value = dept;
-          option.textContent = dept;
-          departmentSelect.appendChild(option);
-        });
-
-        departmentSelect.addEventListener('change', (event) => {
-          const department = event.target.value;
-          if (geojsonLayer) {
-            map.removeLayer(geojsonLayer);
-          }
-
-          const filteredData = {
-            type: "FeatureCollection",
-            features: department === "all"
-              ? geojsonData.features
-              : geojsonData.features.filter(f => f.properties.departemen === department)
-          };
-
-/*           geojsonLayer = L.geoJSON(filteredData, {
-            onEachFeature: (feature, layer) => {
-              let popupContent = `<strong>${feature.properties.libelle}</strong>`;
-              if (feature.properties.horaires) {
-                popupContent += `<br>Ouverture : ${feature.properties.horaires.horaireNormaux}`;
-              } else {
-                popupContent += `<br>Horaires non disponibles`;
-              }
-              layer.bindPopup(popupContent);
-            },
-            pointToLayer: (feature, latlng) => {
-              return L.circleMarker(latlng, {
-                radius: 6,
-                fillColor: "#007bff",
-                color: "#000",
-                weight: 1,
-                opacity: 1,
-                fillOpacity: 0.8
-              });
-            }
-          }).addTo(map); */
-
-          const bounds = geojsonLayer.getBounds();
-          if (bounds.isValid()) {
-            map.fitBounds(bounds);
-          }
-
-          updateStationList(filteredData.features);
-        });
-
-        function updateStationList(features) {
-          stationSelect.innerHTML = '<option value="">Choisissez une gare</option>';
-          stationSelect.style.display = features.length > 0 ? 'block' : 'none';
-
-          features.forEach(f => {
-            const option = document.createElement('option');
-            option.value = JSON.stringify(f.geometry.coordinates);
-            option.textContent = f.properties.libelle;
-            stationSelect.appendChild(option);
-          });
-
-          stationSelect.addEventListener('change', (event) => {
-            const coordinates = JSON.parse(event.target.value);
-            if (coordinates) {
-              map.setView([coordinates[1], coordinates[0]], 13);
-            }
-          });
-        }
-
-        
-
-        async function fetchCSV(filePath) {
-          const response = await fetch(filePath);
-          const text = await response.text();
-          return Papa.parse(text, { header: true }).data;
-        }
-      } catch (error) {
-        console.error("Une erreur est survenue :", error);
-        alert("Une erreur est survenue : " + error.message);
-      }
-    };
-  </script>
 </head>
 
 <body>
+  
   <div id="doc">
-    <div id="controls">
-      <label for="department-select">Choisir un département : </label>
-      <select id="department-select">
-        <option value="all">Tous</option>
-      </select>
-      <select id="station-select"></select>
-    </div>
     <div id="map"></div>
+    <div id="informations">
+      <h2>Trouver une gare</h2>
+
+      <div class="searchContainer">
+        <input id="gareSearch" type="text">
+        <p>Ou</p>
+        <div id="controls">
+          <!-- <label for="department-select">Choisir un département : </label> -->
+           
+          <select id="department-select">
+            <option value="" disabled selected>Choisissez un département</option>
+            <option value="all">Tous</option>
+          </select>
+          <select id="station-select">
+            <option value="" disabled selected>Choisissez une gare</option>
+
+          </select>
+        </div>
+      </div>
+      
+      <div class="right">
+        <div id="menu">
+          <ul>
+            <li><a href="#" data-target="info">Informations</a></li>
+            <li><a href="#" data-target="horaires">Horaires</a></li>
+            <li><a href="#" data-target="accessibilite">Accessibilité</a></li>
+            <li><a href="#" data-target="satisfaction">Satisfaction</a></li>
+            <li><a href="#" data-target="contact">Contact</a></li>
+          </ul>
+        </div>
+        <div id="content">
+          <div id="nomGare"></div>
+          <div class="info">
+            <div class="status"></div>
+            <div class="adresse"></div>
+          </div>
+          <div id="horaires" class="content-section">
+            <h3>Horaires</h3>
+          </div>
+          <div id="accessibilite" class="content-section">
+            <h2>Accessibilité</h2>
+            <p>Nos locaux sont accessibles aux personnes à mobilité réduite.</p>
+          </div>
+          <div id="contact" class="content-section">
+            <h2>Contact</h2>
+            <p>Vous pouvez nous joindre au 01 23 45 67 89 ou par email à exemple@mail.com.</p>
+          </div>
+        </div>
+      </div>
+      
   </div>
  
 </body>
