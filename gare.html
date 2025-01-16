@@ -9,10 +9,14 @@
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
-  <script src="./utils.js"></script>
-  <script src="./gare.js"></script>
+  <!-- <script type="module" src="./js/map.js"></script>
+  <script type="module" src="./js/data.js"></script>
+  <script type="module" src="./js/filter.js"></script>
+  <script type="module" src="./js/affichage.js"></script>
+  <script type="module" src="./js/gare.js"></script> -->
+  <script src="./js/gare.js"></script>
+
   <link rel="stylesheet" href="style.css">
 
 </head>
@@ -25,7 +29,11 @@
       <h2>Trouver une gare</h2>
 
       <div class="searchContainer">
-        <input id="gareSearch" type="text">
+        <form id="gareForm">
+          <input oninput="searchGareList(geojsonData)" id="gareSearch" type="text">
+          <!-- <button type="submit">V</button> -->
+          <ul id="resultGareSearch"></ul>
+        </form>
         <p>Ou</p>
         <div id="controls">
           <!-- <label for="department-select">Choisir un département : </label> -->
@@ -53,7 +61,7 @@
         </div>
         <div id="content">
           <div id="nomGare"></div>
-          <div class="info">
+          <div id="info" class="content-section">
             <div class="status"></div>
             <div class="adresse"></div>
           </div>
