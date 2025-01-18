@@ -16,6 +16,7 @@
   <script type="module" src="./js/affichage.js"></script>
   <script type="module" src="./js/gare.js"></script> -->
   <script src="./js/gare.js"></script>
+  <script src="./js/utils.js"></script>
 
   <link rel="stylesheet" href="style.css">
 
@@ -30,9 +31,9 @@
 
       <div class="searchContainer">
         <form id="gareForm">
-          <input oninput="searchGareList(geojsonData)" id="gareSearch" type="text">
+          <input oninput="updateGareList(geojsonData)" id="gareSearch" type="text">
           <!-- <button type="submit">V</button> -->
-          <ul id="resultGareSearch"></ul>
+          <ul style="display: none;" id="resultGareSearch"></ul>
         </form>
         <p>Ou</p>
         <div id="controls">
@@ -62,8 +63,8 @@
         <div id="content">
           <div id="nomGare"></div>
           <div id="info" class="content-section">
-            <div class="status"></div>
-            <div class="adresse"></div>
+            <div id="status"></div>
+            <div id="adresse"></div>
           </div>
           <div id="horaires" class="content-section">
             <h3>Horaires</h3>

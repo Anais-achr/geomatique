@@ -1,7 +1,7 @@
 const jourSemaine = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
 function trieJourSemaine(tab){
-    tab.sort(([keyA, horairesA], [keyB, horairesB]) => {
+    tab.sort((horairesA, horairesB) => {
         const indexA = jourSemaine.indexOf(horairesA.jour);
         const indexB = jourSemaine.indexOf(horairesB.jour);
 

@@ -4,43 +4,21 @@ import { departementSelect, handleDepartmentChange } from "./filter";
 import { afficherHoraires, afficherMenu, afficherSection, afficherNomGare } from "./affichage";
 
  */
- let map, geojsonLayer, geojsonData
+ let map, geojsonLayer, geojsonData, gareSelected = null
 
 window.onload = async () => {
   try {
     initializeMap();
+
     geojsonData = await loadGeojsonData();
     const horaires = await loadHorairesData();
+
     attachHorairesToStations(geojsonData, horaires);
 
-    geojsonLayer = createGeoJsonLayer(geojsonData);
-    geojsonLayer.addTo(map);
-
-    const departmentSelect = document.getElementById('department-select');
-    departementSelect(geojsonData, departmentSelect);
-
-    departmentSelect.addEventListener('change', (event) => {
-      handleDepartmentChange(event.target.value, geojsonData);
-    });
-
-    const stationSelect = document.getElementById("station-select");
-    stationSelect.addEventListener('change', () => {
-        const coordinates = JSON.parse(stationSelect.value);
-        if (coordinates) {
-            map.setView([coordinates[1], coordinates[0]], 13);
-
-            const feature = geojsonData.features.find(f => {
-                const featureCoordinates = f.geometry.coordinates;
-                return featureCoordinates[0] === coordinates[0] && featureCoordinates[1] === coordinates[1];
-            });
-
-            if (feature) {
-                afficherNomGare(feature.properties.libelle);
-                afficherMenu();
-                afficherHoraires(feature);
-            }
-        }
-    });
+    setupGeoJsonLayer(geojsonData);
+    setupSearchBar(geojsonData);
+    setupDepartmentSelect(geojsonData);
+    setupStationSelect(geojsonData);
 
   } catch (error) {
     console.error("Une erreur est survenue :", error);
@@ -48,6 +26,78 @@ window.onload = async () => {
   }
 };
 
+
+function setupGeoJsonLayer(geojsonData) {
+    geojsonLayer = createGeoJsonLayer(geojsonData);
+    geojsonLayer.addTo(map);
+}
+
+
+function setupSearchBar(geojsonData) {
+    const inputS = document.getElementById("gareSearch");
+    
+
+    inputS.addEventListener("input", () => {
+        updateGareList(geojsonData); 
+    });
+}
+
+function updateGareList(geojsonData) {
+    const inputS = document.getElementById("gareSearch");
+    const gareList = document.getElementById("resultGareSearch");
+    const valueInput = inputS.value;
+    if (valueInput === "") {
+        gareList.innerHTML = "";
+        gareList.style.display = "none";
+        return;
+    }
+
+    const gares = geojsonData.features
+        .map(feature => feature.properties.libelle)
+        .filter(gare => gare.toLowerCase().includes(valueInput.toLowerCase()));
+
+    gareList.style.display = gares.length ? "block" : "none";
+
+    gareList.innerHTML = "";
+
+    gares.forEach(gare => {
+        const newLi = document.createElement("li");
+        newLi.textContent = gare;
+        newLi.addEventListener("click", () => {
+            gareList.style.display = "none";
+            selectGare(gare, geojsonData); 
+        });
+        gareList.appendChild(newLi);
+    });
+}
+
+
+
+function setupDepartmentSelect(geojsonData) {
+    const departmentSelect = document.getElementById('department-select');
+    setupDepartmentOptions(geojsonData, departmentSelect);
+
+    departmentSelect.addEventListener('change', (event) => {
+      handleDepartmentChange(event.target.value, geojsonData);
+    });
+}
+
+function setupStationSelect(geojsonData) {
+    const stationSelect = document.getElementById("station-select");
+    stationSelect.addEventListener('change', () => {
+        const coordinates = JSON.parse(stationSelect.value);
+        if (coordinates) {
+            const feature = geojsonData.features.find(f => {
+                const featureCoordinates = f.geometry.coordinates;
+                return featureCoordinates[0] === coordinates[0] && featureCoordinates[1] === coordinates[1];
+            });
+
+            if (feature) {
+                affiche_tout(feature);
+            }
+        }
+    });
+}
 
 /* map */
  function initializeMap() {
@@ -61,17 +111,30 @@ window.onload = async () => {
       subdomains: 'abcd',
       maxZoom: 20
     }).addTo(map);
+
+    
 }
 
 function resetMap() {
     if (geojsonLayer) {
         map.removeLayer(geojsonLayer);
     }
-
+    if(gareSelected) {
+        map.removeLayer(gareSelected);
+    }
     geojsonLayer = createGeoJsonLayer(geojsonData);
     geojsonLayer.addTo(map);
 }
 
+function hoverMakerName(layer, feature) {
+    layer.bindPopup(feature.properties.libelle)
+            .on('mouseover', function (e) {
+            this.openPopup();
+          })
+            .on('mouseout', function (e) {
+            this.closePopup();
+          });
+}
 
 
  function createGeoJsonLayer(geojsonData) {
@@ -79,11 +142,14 @@ function resetMap() {
       onEachFeature: (feature, layer) => {
         setTimeout(() => {
           layer.on('click', () => {
-              afficherNomGare(feature.properties.libelle);
-              afficherMenu();
-              afficherHoraires(feature);
+              affiche_tout(feature);
           });
+
+          hoverMakerName(layer, feature);
         }, 100);
+
+
+        
       },
       pointToLayer: (feature, latlng) => {
         return L.circleMarker(latlng, {
@@ -128,17 +194,37 @@ async function loadHorairesData() {
 /* gestion horaires */
  function attachHorairesToStations(geojsonData, horaires) {
     geojsonData.features.forEach(feature => {
-      const libelle = feature.properties.libelle;
-      const gare = horaires[libelle];
-      if (gare) {
-        feature.properties.horaires = gare.map(j => ({
-          jour: j.jour_de_la_semaine,
-          horaireNormaux: j.horaire_en_jour_normal,
-          horaireFerie: j.horaire_en_jour_ferie
-        }));
-      }
-    });
+        const libelle = feature.properties.libelle;
+        const gare = horaires[libelle];
+
+        if(gare) {
+            const horairesRegroupe = {};
+            
+            gare.forEach(j => {
+                const jour = j.jour_de_la_semaine;
+
+                if(!horairesRegroupe[jour]) {
+                    horairesRegroupe[jour] = {
+                        jour: jour,
+                        horaireNormaux: [],
+                        horaireFerie: []
+                    }
+                }
+
+                if(j.horaire_en_jour_normal) {
+                    horairesRegroupe[jour].horaireNormaux.push(j.horaire_en_jour_normal);
+                }
+
+                if(j.horaire_en_jour_ferie) {
+                    horairesRegroupe[jour].horaireFerie.push(j.horaire_en_jour_ferie);
+                }
+            })
+
+            feature.properties.horaires = trieJourSemaine(Object.values(horairesRegroupe));
+        }
+    })
 }
+
 
 /**
  * Le fichier CSV des horaires contient pour chaque jour de la semaien un horaire pour la gare, cette fonction regroupe pour chazque gare, ses horaires de la semaine en un seul tableau
@@ -181,7 +267,7 @@ async function loadHorairesData() {
     const filteredData = {
       type: "FeatureCollection",
       features: department === "all"
-        ? geojsonData.features
+        ? resetMap()
         : geojsonData.features.filter(f => f.properties.departemen === department)
     };
   
@@ -197,7 +283,7 @@ async function loadHorairesData() {
 }
 
 
- function departementSelect(geojsonData, departmentSelect) {
+ function setupDepartmentOptions(geojsonData, departmentSelect) {
     const departments = [...new Set(geojsonData.features.map(f => f.properties.departemen))].sort();
     departments.forEach(dept => {
       const option = document.createElement('option');
@@ -208,60 +294,40 @@ async function loadHorairesData() {
   }
   
 
- function searchGareList(geojsonData){
-    
-    const inputS = document.getElementById("gareSearch")
-    const gareList = document.getElementById("resultGareSearch");
-
-    ["focus", "input", 'change'].forEach(event => inputS.addEventListener(event, resetMap));
-
-
-    if (inputS === "") {
-      gareList.innerHTML = ""; 
-      return;
-    }
-    gareList.style.display = "block";
-    const gares = geojsonData.features
-        .map(feature => feature.properties.libelle)
-        .filter(gare => gare.toLowerCase().includes(inputS.value.toLowerCase()));
-
-    gareList.innerHTML = "";
-    gares.forEach(gare => {
-  
-      const newLi = document.createElement("li");
-      newLi.textContent = gare;
-      newLi.addEventListener("click", () => {
-        gareList.style.display = "none";
-        selectgare(gare);
-      });
-      gareList.appendChild(newLi);
-    });
-}
 
 
 
 /* affichage */
- function selectgare(gare) {
+ function selectGare(gare, geojsonData) {
     const inputS = document.getElementById("gareSearch");
+    const formSearch = document.getElementById("gareForm");
     
     inputS.value = gare;
   
     const feature = geojsonData.features.find(f => f.properties.libelle.toLowerCase() === gare.toLowerCase());
     if(feature){
-      const coordinates = feature.geometry.coordinates;
-      map.setView([coordinates[1], coordinates[0]], 13);
+      affiche_tout(feature)
     }
   
-    const formSearch = document.getElementById("gareForm");
-    formSearch.addEventListener("submit", () => { 
-      e => e.preventDefault();
-    });
+    formSearch.addEventListener("submit", () => e => e.preventDefault());
   
     inputS.value = "";
-    afficherNomGare(gare);
-    afficherMenu();
-    afficherHoraires(feature);
-  }
+    
+}
+
+async function drawGareSelected(feature) {
+    resetMap();
+    const coordinates = feature.geometry.coordinates;
+    gareSelected = L.circleMarker([coordinates[1], coordinates[0]], {
+        color: 'red',        
+        fillColor: 'red',    
+        fillOpacity: 0.8,    
+        radius: 8           
+    }).addTo(map);
+    hoverMakerName(gareSelected, feature);
+    console.log(feature.properties.address)
+    map.setView([coordinates[1], coordinates[0]], 10);
+}
   
    function afficherNomGare(nomGare){
       const nomGareDiv = document.getElementById("nomGare");
@@ -303,7 +369,8 @@ async function loadHorairesData() {
           const lignes = Object.entries(feature.properties.horaires);
           divHoraire.innerHTML += `<ul>`;
           lignes.forEach(([key, horaires]) => {
-              divHoraire.innerHTML += `<li>${horaires.jour} : ${horaires.horaireNormaux}</li>`;
+            console.log(horaires);
+              divHoraire.innerHTML += `<li>${horaires.jour} : ${horaires.horaireNormaux.join(' - ')}</li>`;
           });
           divHoraire.innerHTML += `</ul>`;
       } else {
@@ -311,7 +378,57 @@ async function loadHorairesData() {
       }
   }
   
+
+function formatAdress(adresse) {
+    let adressComplete = '';
+
+    if(adresse.number) {
+        adressComplete += adresse.number + ', '
+    }
+
+    if(adresse.road) {
+        adressComplete += adresse.road + ', '
+    }
+
+    if(adresse.county) {
+        adressComplete += adresse.county + ', '
+    }
+
+    if(adresse.postcode) {
+        adressComplete += adresse.postcode + ', '
+    }
+
+    if(adresse.country) {
+        adressComplete += adresse.country
+    }
+
+    if(adressComplete.startsWith(',')) {
+        adressComplete = adressComplete.slice(0, -2);
+    }
+
+    return adressComplete
+}
+
+function afficheInfo(feature) {
+    const divAdress = document.getElementById("adresse");
+    divAdress.innerHTML = '';
+    console.log(feature)
+
+    if(feature.properties.address){
+        const adr = formatAdress(feature.properties.address)
+        divAdress.innerHTML += `${adr}`;
+    }
+
+}
   
+
+function affiche_tout(feature) {
+    drawGareSelected(feature);
+    afficherNomGare(feature.properties.libelle);
+    afficherMenu();
+    afficherHoraires(feature);
+    afficheInfo(feature)
+}
 
 
 
