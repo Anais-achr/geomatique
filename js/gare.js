@@ -219,7 +219,6 @@ async function loadAccessibilites() {
 }
 
 
-
 function attachAccessibiliteToStations(geojsonData, accessibilites) {
     geojsonData.features.forEach(feature => {
         const uic = feature.properties.code_uic;
@@ -338,10 +337,6 @@ function attachAccessibiliteToStations(geojsonData, accessibilites) {
       departmentSelect.appendChild(option);
     });
   }
-  
-
-
-
 
 /* affichage */
  function selectGare(gare, geojsonData) {
@@ -448,7 +443,7 @@ async function drawGareSelected(feature) {
           divHoraire.innerHTML = `<p>Horaires non disponibles.</p>`;
       }
   }
-  
+
 
 function formatAdress(adresse) {
     let adressComplete = '';
@@ -529,16 +524,39 @@ function afficheInfo(feature) {
 
 }
 
+// function afficheAccessibilites(feature) {
+//     const divAcc = document.getElementById("accessibilite");
+//     divAcc.innerHTML = '';
+//     if(feature.properties.accessibilites) {
+//         console.log(feature.properties.accessibilites);
+//     } else { 
+//         console.log("aucune accessibilité connue");
+//     }
+// }
+
 function afficheAccessibilites(feature) {
     const divAcc = document.getElementById("accessibilite");
     divAcc.innerHTML = '';
-    if(feature.properties.accessibilites) {
-        console.log(feature.properties.accessibilites);
-    } else { 
-        console.log("aucune accessibilité connue");
+
+    if (feature.properties.accessibilites && feature.properties.accessibilites.length > 0) {
+        const titre = document.createElement("h3");
+        titre.textContent = "Accessibilités disponibles :";
+        divAcc.appendChild(titre);
+
+        const liste = document.createElement("ul");
+
+        feature.properties.accessibilites.forEach(accessibilite => {
+            const item = document.createElement("li");
+            item.textContent = accessibilite;
+            liste.appendChild(item);
+        });
+
+        divAcc.appendChild(liste);
+    } else {
+        divAcc.innerHTML = `<p>Aucune information d'accessibilité disponible pour cette gare.</p>`;
     }
 }
-  
+
 
 function affiche_tout(feature) {
     drawGareSelected(feature);
@@ -546,7 +564,7 @@ function affiche_tout(feature) {
     afficherMenu();
     afficherHoraires(feature);
     afficheAccessibilites(feature);
-    afficheInfo(feature)
+    afficheInfo(feature);
 }
 
 
