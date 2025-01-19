@@ -11,6 +11,10 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
+  .container2 {
+    
+  }
+
   .right{
     display: flex;
     gap: 10px;
@@ -36,10 +40,9 @@
   }
 
   #menu {
-    width: 200px;
-    max-height: 300px;
+    width: 150px;
+    max-height: 320px;
     background-color: #f4f4f4;
-    border-right: 1px solid #ddd;
     padding: 10px;
     box-sizing: border-box;
     margin-top: 100px;
@@ -50,18 +53,21 @@
     list-style-type: none;
     padding: 0;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* S'assure que le UL occupe toute la hauteur */
+    justify-content: space-between; 
   }
 
   #menu li {
-    margin-bottom: 10px;
   }
 
   #menu li a {
     text-decoration: none;
-    color: #333;
+    color: #ffffff;
     display: block;
     padding: 10px;
-    background-color: #eaeaea;
+    background-color: #34b0d6;
     border-radius: 4px;
     text-align: center;
   }
@@ -75,14 +81,26 @@
     z-index: 999;
   }
 
+  #content {
+    position: relative;
+    height: 400px;
+  }
+
   .content-section {
-    text-align: left;
-    display: none;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    z-index: 0; 
   }
 
   .content-section.active {
-    display: block; 
+    opacity: 1; 
+    z-index: 1; 
+    transition: opacity 0.3s ease-in-out; 
   }
+
 
   .searchContainer {
     position: relative;
@@ -193,10 +211,6 @@
   #status p {
     width: 150px;
   }
-
-  #adresse {
-    margin-top: 40px;
-  }
   
   #adresse p {
     width: 150px;
@@ -208,3 +222,37 @@
     width: 50px;
     height: 50px;
   }
+
+  #horaires {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-height: 320px;
+    max-width: 600px
+  }
+
+  #horaires table {
+    font-size: 1em;
+    border-collapse: collapse; 
+    width: 100%; 
+    height: 100%;
+  }
+
+  #horaires table th {
+    background-color: #ddd;
+  }
+
+  #horaires table td, 
+  #horaires table th {
+      text-align: center;
+      border: 1px solid #ddd;
+    
+  }
+
+  tbody > tr:hover{
+    background-color: rgb(237 238 242);
+  }
+  
+  
+ 
+  

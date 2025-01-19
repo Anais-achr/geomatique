@@ -212,11 +212,17 @@ async function loadHorairesData() {
                 }
 
                 if(j.horaire_en_jour_normal) {
-                    horairesRegroupe[jour].horaireNormaux.push(j.horaire_en_jour_normal);
+                    horairesRegroupe[jour].horaireNormaux
+                    .push(j.horaire_en_jour_normal);
+                    horairesRegroupe[jour].horaireNormaux
+                    .sort()
                 }
 
                 if(j.horaire_en_jour_ferie) {
-                    horairesRegroupe[jour].horaireFerie.push(j.horaire_en_jour_ferie);
+                    horairesRegroupe[jour].horaireFerie
+                    .push(j.horaire_en_jour_ferie);
+                    horairesRegroupe[jour].horaireFerie
+                    .sort();
                 }
             })
 
@@ -231,7 +237,6 @@ async function loadHorairesData() {
  * @param {*} horairesCSV 
  * @returns 
  */
-
  function buildHoraires(horairesCSV) {
       return horairesCSV.reduce((acc, current) => {
       const gare = current.gare;
@@ -353,11 +358,11 @@ async function drawGareSelected(feature) {
   
    function afficherSection(target) {
       const allSections = document.querySelectorAll(".content-section");
-      allSections.forEach(section => section.style.display = "none");
+      allSections.forEach(section => section.classList.remove("active"));
   
       const sectionOk = document.getElementById(target);
       if (sectionOk) {
-          sectionOk.style.display = "block";
+        sectionOk.classList.add("active");
       }
   }
   
@@ -367,12 +372,56 @@ async function drawGareSelected(feature) {
   
       if (feature.properties.horaires) {
           const lignes = Object.entries(feature.properties.horaires);
-          divHoraire.innerHTML += `<ul>`;
+
+          const tableau = document.createElement("table");
+          tableau.classList.add("horaireTableau");
+
+          const thead = document.createElement("thead");
+          thead.innerHTML = `
+            <tr>
+                <th>Jour</th>
+                <th>Horaire normaux</th>
+                <th>Horaire Férié</th>
+            </tr>
+          `;
+          tableau.appendChild(thead);
+          
+          const tbody = document.createElement("tbody");
+           
+          lignes.forEach(([key, horaire]) => {
+            const ligne = document.createElement("tr");
+
+            ligne.innerHTML = `
+                <td>${horaire.jour}</td>
+                <td>${horaire.horaireNormaux.join(' - ')}</td>
+                <td>${horaire.horaireFerie.join(' - ')}</td>
+            `;
+
+            tbody.appendChild(ligne);
+          })
+
+
+          tableau.appendChild(tbody);
+          divHoraire.appendChild(tableau);
+
+          /* ulJours = document.createElement("ul");
           lignes.forEach(([key, horaires]) => {
-            console.log(horaires);
-              divHoraire.innerHTML += `<li>${horaires.jour} : ${horaires.horaireNormaux.join(' - ')}</li>`;
+              ulJours.innerHTML += `<li>${horaires.jour}</li>`;
           });
-          divHoraire.innerHTML += `</ul>`;
+          divHoraire.appendChild(ulJours);
+
+          ulHoraireNormaux = document.createElement("ul");
+          lignes.forEach(([key, horaires]) => {
+            ulHoraireNormaux.innerHTML += `<li>${horaires.horaireNormaux.join(' - ')}</li>`;
+          });
+          divHoraire.appendChild(ulHoraireNormaux)
+
+          ulHoraireFerie = document.createElement("ul");
+          lignes.forEach(([key, horaires]) => {
+            console.log(key);
+            ulHoraireFerie.innerHTML += `<li>${horaires.horaireFerie.join(' - ')}</li>`;
+          });
+          divHoraire.appendChild(ulHoraireFerie); */
       } else {
           divHoraire.innerHTML = `<p>Horaires non disponibles.</p>`;
       }
@@ -423,22 +472,22 @@ function afficheInfo(feature) {
         case undefined:
             status = 'Ouverture Indeterminée';
             cercleStatus = 'cercleInconnu';
-            classStatus = 'inconnuStatus';  // Classe pour "inconnu"
+            classStatus = 'inconnuStatus';  
             break;
         case true:
             status = 'Ouvert';
             cercleStatus = 'cercleOuvert';
-            classStatus = 'ouvertStatus';  // Classe pour "ouvert"
+            classStatus = 'ouvertStatus';  
             break;
         case false:
             status = 'Fermée';
             cercleStatus = 'cercleFerme';
-            classStatus = 'fermeeStatus';  // Classe pour "fermé"
+            classStatus = 'fermeeStatus';  
             break;
         default:
             status = 'Ouverture Indeterminée';
             cercleStatus = 'cercleInconnu';
-            classStatus = 'inconnuStatus';  // Classe pour "inconnu" par défaut
+            classStatus = 'inconnuStatus';  
             break;
     }
     divStatus.className = classStatus;
