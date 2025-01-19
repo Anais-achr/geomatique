@@ -1,3 +1,9 @@
+body {
+  background-color: #f3e5f5;
+  margin: 0;
+  padding: 0;
+}
+
 #doc {
     display: flex; 
     gap: 10px;
@@ -5,44 +11,93 @@
   }
   
   #map {
-    flex: 1; 
+    flex: 1;
     height: 600px; 
     border: none;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    position: relative;
+    padding: 20px;
+}
+  #premiere-partie {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 200px;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
   }
 
-  .right{
-    display: flex;
-    gap: 10px;
-    padding: 10px;
-  }
+  
 
   #informations {
-    flex: 1; 
-    height: 600px; 
+    height: 600px;
+    flex: 1;
     text-align: center;
-    background-color: rgba(107, 228, 178, 1);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(20px);
-    border-radius: 10px;
+    position: relative;
     padding: 20px;
     border: 2px solid rgba(0, 0, 0, 0.1);
-    z-index: 1;
+    border-radius: 10px;
+    z-index: 0;
+  }
+
+  #informations::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(204, 176, 134, 0.5), rgba(0, 0, 0, 0.5));
+    z-index: -1;
   }
   
+  
+  #informations::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('train.jpg') no-repeat center center;
+    background-size: cover;
+    filter: blur(5px);
+    z-index: -1;
+  }
+  
+  #informations .content {
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  } 
+
+
+
+  .deuxieme-partie{
+    display: flex;
+    top: 0;
+    gap: 10px;
+    padding: 10px;
+    height: 400px;
+  }
 
   #menu {
     display: none;
   }
 
   #menu {
-    width: 150px;
-    max-height: 320px;
-    background-color: #f4f4f4;
-    padding: 10px;
+    padding: 5px; 
     box-sizing: border-box;
-    margin-top: 100px;
+    margin-top: 20px; 
+    top: 50px;
     z-index: 998;
+    position: relative;
+    height: 250px;
   }
 
   #menu ul {
@@ -51,21 +106,21 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    height: 100%;
     justify-content: space-between; 
+    height: 100%;
   }
 
-  #menu li {
-  }
 
   #menu li a {
     text-decoration: none;
     color: #ffffff;
     display: block;
     padding: 10px;
-    background-color: #34b0d6;
+    background-color: #6200ea;;
     border-radius: 4px;
     text-align: center;
+    text-transform: lowercase;
+    font-variant: small-caps;
   }
   #menu li a:hover {
     background-color: #ccc;
@@ -73,49 +128,49 @@
 
   #content {
     flex: 1;
-    padding: 20px;
-    z-index: 999;
+    position: relative;
+    height: 300px;
+    max-height: 300px; 
   }
 
-  #content {
-    position: relative;
-    height: 400px;
-  }
+  
+
 
   .content-section {
     position: absolute;
-    left: 0;
-    width: 100%;
-    height: 100%;
     opacity: 0;
-    z-index: 0; 
+    width: 100%;
   }
 
   .content-section.active {
     opacity: 1; 
     z-index: 1; 
     transition: opacity 0.3s ease-in-out; 
-  }
+  } 
 
-
-  .searchContainer {
+  #content #nomGare {
+    color: rgb(255, 255, 255);
+    text-align: center;
+    width: 100%;
+    justify-content: center;
+    padding: 0;
     position: relative;
-  }
-
+    top: -20px;
+    left: -30px;
+}
   #gareForm {
     display: flex;
     flex-direction: column;
     align-items: center;     
     justify-content: center;
     position: relative;
-
   }
 
   #resultGareSearch {
     max-height: 200px;
     max-width: 300px;
     overflow-y: auto;
-    border: 2px solid #e63688;
+    border: 2px solid #6200ea;
     border-radius: 6%;
     padding: 5px;
     z-index: 1000;
@@ -140,7 +195,9 @@
     display: flex;
     flex-direction: column;
     text-align: center;
-    gap: 20px;
+    gap: 10px;
+    background-color: rgba(216, 216, 216, 0.281);
+    height: 250px;
   }
 
   #info div {
@@ -152,79 +209,17 @@
   }
 
 
-  #status, #adresse {
-    display: flex;
-    align-items: center; 
-    gap: 30px; 
-    margin-bottom: 20px;
-    justify-content: center;
-
-  }
-
-  #cercleInconnu {
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    border: 3px solid #3f3f3e;
-    z-index: 1001;
-    background-color: grey;
-  }
-
-  #cercleOuvert {
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    border: 3px solid #0f4e11; /* Bordure verte */
-    z-index: 1001;
-    background-color: #4CAF50; /* Fond vert */
-  }
-
-  #cercleFerme {
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    border: 3px solid #9c1b12; /* Bordure rouge */
-    z-index: 1001;
-    background-color: #f44336; /* Fond rouge */
-  }
-
-  .inconnuStatus {
-    color: #3f3f3e;
-  }
-
-  .fermeeStatus {
-    color: #f44336;
-  }
-
-  .ouvertStatus {
-    color: #4CAF50;
-  }
-
-  #status {
-    margin-top: 40px;
-  }
-
-  #status p {
-    width: 150px;
-  }
   
-  #adresse p {
-    width: 150px;
-    font-size: 1em;
-    text-align: center;
-    font-family: 'Courier New', Courier, monospace;
-  }
-  #adresse img {
-    width: 50px;
-    height: 50px;
-  }
-
   #horaires {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    max-height: 320px;
-    max-width: 600px
+    max-height: 250px;
+    height: 100%;
+    max-width: 600px;
+    position: relative;
+    background-color: rgba(216, 216, 216, 0.281);
+
   }
 
   #horaires table {
@@ -249,6 +244,163 @@
     background-color: rgb(237 238 242);
   }
   
+
+  #department-select,
+#station-select {
+  z-index: 10;
+  width: 60%;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 16px;
+  border: 2px solid #6200ea; 
+  border-radius: 5px;
+  background: #f3e5f5; 
+  color: #333; 
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
   
  
   
+
+
+#status, #adresse {
+  display: flex;
+  align-items: center; 
+  justify-content: center;
+
+}
+
+#cercleInconnu {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border: 3px solid #20201f;
+  z-index: 1001;
+  background-color: rgb(88, 88, 88);
+}
+
+#cercleOuvert {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border: 3px solid #0f4e11; 
+  z-index: 1001;
+  background-color: #4CAF50; 
+}
+
+#cercleFerme {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border: 3px solid #9c1b12; 
+  z-index: 1001;
+  background-color: #f44336; 
+}
+
+.inconnuStatus {
+  color: rgb(58, 57, 57);
+}
+
+.fermeeStatus {
+  color: #f44336;
+}
+
+.ouvertStatus {
+  color: #0f4e11;
+}
+
+#status {
+  margin-top: 20px;
+}
+
+#status p {
+  width: 150px;
+}
+
+
+#adresse p {
+  width: 150px;
+  font-size: 1em;
+  text-align: center;
+  font-family: 'Courier New', Courier, monospace;
+}
+#adresse img {
+  width: 50px;
+  height: 50px;
+}
+
+
+
+/* Barre de navigation */
+#sncf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: linear-gradient(to right, #d9042b, #662483, #321450); ;
+  color: white;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Logo */
+#sncf .logo img {
+  height: 60px; 
+  max-height: 100%;
+  width: auto; 
+}
+
+/* Navigation */
+#sncf nav ul {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+}
+
+#sncf nav ul li {
+  margin: 0 15px;
+}
+
+#sncf nav ul li a {
+  text-decoration: none;
+  color: white;
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+#sncf nav ul li a:hover {
+  color: #ffcc00;
+}
+
+/* Barre de recherche */
+.search-container {
+  display: flex;
+  align-items: center;
+}
+
+.search-container input[type="text"] {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.search-container button {
+  background: white;
+  border: none;
+  padding: 5px 10px;
+  margin-left: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #363795;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.search-container button:hover {
+  background: #ffcc00;
+  color: white;
+}

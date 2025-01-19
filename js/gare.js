@@ -12,8 +12,10 @@ window.onload = async () => {
 
     geojsonData = await loadGeojsonData();
     const horaires = await loadHorairesData();
+    const accessibilites = await loadAccessibilites(); 
 
     attachHorairesToStations(geojsonData, horaires);
+    attachAccessibiliteToStations(geojsonData, accessibilites);
 
     setupGeoJsonLayer(geojsonData);
     setupSearchBar(geojsonData);
@@ -70,8 +72,6 @@ function updateGareList(geojsonData) {
         gareList.appendChild(newLi);
     });
 }
-
-
 
 function setupDepartmentSelect(geojsonData) {
     const departmentSelect = document.getElementById('department-select');
@@ -171,11 +171,8 @@ function hoverMakerName(layer, feature) {
     return await geojsonResponse.json();
 }
 
-async function loadHorairesData() {
-    const response = await fetch("horaires-des-gares1.csv");
-    const text = await response.text();
-  
-    const lignes = text.split("\n"); 
+function parseCSVToObject(csv) {
+    const lignes = csv.split("\n"); 
     const header = lignes[0].split(";");
     const data = lignes.slice(1).map((ligne) => {
       const valeurs = ligne.split(";");
@@ -186,10 +183,54 @@ async function loadHorairesData() {
         return acc;
       }, {});
     });
+
+    return data;
+}
+
+async function loadHorairesData() {
+    const response = await fetch("horaires-des-gares1.csv");
+    const text = await response.text();
+  
+    const data = parseCSVToObject(text);
   
     return buildHoraires(data);
 }
+/* accessibilité */
+function buildAccessibilite(accessibilitesCSV) {
+    return accessibilitesCSV.reduce((acc, current)  => {
+        const gare = current.UIC;
 
+        if (!acc[gare]) {
+            acc[gare] = [];
+        }
+        acc[gare].push(current.accessibilite);
+        return acc;
+    }, {})
+
+}
+
+async function loadAccessibilites() {
+    const response = await fetch("equipements-accessibilite-en-gares.csv");
+    const text = await response.text();
+
+    const data = parseCSVToObject(text);
+
+    return buildAccessibilite(data);
+}
+
+
+
+function attachAccessibiliteToStations(geojsonData, accessibilites) {
+    geojsonData.features.forEach(feature => {
+        const uic = feature.properties.code_uic;
+        const gare = accessibilites[uic];
+
+        if(gare) {
+            feature.properties.accessibilites = Object.values(gare);
+        }
+    })
+
+}
 
 /* gestion horaires */
  function attachHorairesToStations(geojsonData, horaires) {
@@ -403,25 +444,6 @@ async function drawGareSelected(feature) {
 
           tableau.appendChild(tbody);
           divHoraire.appendChild(tableau);
-
-          /* ulJours = document.createElement("ul");
-          lignes.forEach(([key, horaires]) => {
-              ulJours.innerHTML += `<li>${horaires.jour}</li>`;
-          });
-          divHoraire.appendChild(ulJours);
-
-          ulHoraireNormaux = document.createElement("ul");
-          lignes.forEach(([key, horaires]) => {
-            ulHoraireNormaux.innerHTML += `<li>${horaires.horaireNormaux.join(' - ')}</li>`;
-          });
-          divHoraire.appendChild(ulHoraireNormaux)
-
-          ulHoraireFerie = document.createElement("ul");
-          lignes.forEach(([key, horaires]) => {
-            console.log(key);
-            ulHoraireFerie.innerHTML += `<li>${horaires.horaireFerie.join(' - ')}</li>`;
-          });
-          divHoraire.appendChild(ulHoraireFerie); */
       } else {
           divHoraire.innerHTML = `<p>Horaires non disponibles.</p>`;
       }
@@ -506,6 +528,16 @@ function afficheInfo(feature) {
     }
 
 }
+
+function afficheAccessibilites(feature) {
+    const divAcc = document.getElementById("accessibilite");
+    divAcc.innerHTML = '';
+    if(feature.properties.accessibilites) {
+        console.log(feature.properties.accessibilites);
+    } else { 
+        console.log("aucune accessibilité connue");
+    }
+}
   
 
 function affiche_tout(feature) {
@@ -513,6 +545,7 @@ function affiche_tout(feature) {
     afficherNomGare(feature.properties.libelle);
     afficherMenu();
     afficherHoraires(feature);
+    afficheAccessibilites(feature);
     afficheInfo(feature)
 }
 

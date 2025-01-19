@@ -23,34 +23,56 @@
 </head>
 
 <body>
+  <div id="sncf">
+    <div class="logo">
+          <img src="logo-sncf.png" alt="Logo SNCF" />
+    </div>
+    <nav>
+      <ul>
+        <li><a href="#">Accueil</a></li>
+        <li><a href="#">Gare</a></li>
+        <li><a href="#">Service</a></li>
+        <li><a href="#">E-Ticket</a></li>
+        <li><a href="#">About</a></li>
+      </ul>
+    </nav>
+    <div class="search-container">
+      <input type="text" placeholder="Search" id="navbarSearch" />
+      <button id="navbarSearchBtn">🔍</button>
+    </div>
+  </div>
   
   <div id="doc">
     <div id="map"></div>
     <div id="informations">
-      <h2>Trouver une gare</h2>
-
-      <div class="searchContainer">
-        <form id="gareForm">
-          <input oninput="updateGareList(geojsonData)" id="gareSearch" type="text">
-          <!-- <button type="submit">V</button> -->
-          <ul style="display: none;" id="resultGareSearch"></ul>
-        </form>
-        <p>Ou</p>
-        <div id="controls">
-          <!-- <label for="department-select">Choisir un département : </label> -->
-           
-          <select id="department-select">
-            <option value="" disabled selected>Choisissez un département</option>
-            <option value="all">Tous</option>
-          </select>
-          <select id="station-select">
-            <option value="" disabled selected>Choisissez une gare</option>
-
-          </select>
+      <div class="premiere-partie">
+        <h2>Trouver une gare</h2>
+        <div class="searchContainer">
+          <form id="gareForm">
+            <input oninput="updateGareList(geojsonData)" id="gareSearch" type="text">
+            <!-- <button type="submit">V</button> -->
+            <ul style="display: none;" id="resultGareSearch"></ul>
+          </form>
+          <p>Ou</p>
+          <div id="controls">
+            <!-- <label for="department-select">Choisir un département : </label> -->
+             
+            <select id="department-select">
+              <option value="" disabled selected>Choisissez un département</option>
+              <option value="all">Tous</option>
+            </select>
+            <select id="station-select">
+              <option value="" disabled selected>Choisissez une gare</option>
+  
+            </select>
+          </div>
         </div>
       </div>
       
-      <div class="right">
+
+      
+      
+      <div class="deuxieme-partie">
         <div id="menu">
           <ul>
             <li><a href="#" data-target="info">Informations</a></li>
@@ -63,21 +85,12 @@
         <div id="content">
           <div id="nomGare"></div>
           <div id="info" class="content-section">
-            <div id="status">
-            </div>
-            <div id="adresse">
-            </div>
+            <div id="status"></div>
+            <div id="adresse"></div>
           </div>
-          <div id="horaires" class="content-section">
-          </div>
-          <div id="accessibilite" class="content-section">
-            <h2>Accessibilité</h2>
-            <p>Nos locaux sont accessibles aux personnes à mobilité réduite.</p>
-          </div>
-          <div id="contact" class="content-section">
-            <h2>Contact</h2>
-            <p>Vous pouvez nous joindre au 01 23 45 67 89 ou par email à exemple@mail.com.</p>
-          </div>
+          <div id="horaires" class="content-section"></div>
+          <div id="accessibilite" class="content-section"></div>
+          <div id="contact" class="content-section"></div>
         </div>
       </div>
       
