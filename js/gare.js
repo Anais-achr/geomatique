@@ -410,13 +410,50 @@ function formatAdress(adresse) {
 }
 
 function afficheInfo(feature) {
+    const divStatus = document.getElementById("status");
+    divStatus.innerHTML = '';
+    let classStatus;
+    let cercleStatus;
+    let status;
+
+    const horaires = feature?.properties?.horaires;
+
+    switch (isGareOpen(horaires)) {
+        case -1:
+        case undefined:
+            status = 'Ouverture Indeterminée';
+            cercleStatus = 'cercleInconnu';
+            classStatus = 'inconnuStatus';  // Classe pour "inconnu"
+            break;
+        case true:
+            status = 'Ouvert';
+            cercleStatus = 'cercleOuvert';
+            classStatus = 'ouvertStatus';  // Classe pour "ouvert"
+            break;
+        case false:
+            status = 'Fermée';
+            cercleStatus = 'cercleFerme';
+            classStatus = 'fermeeStatus';  // Classe pour "fermé"
+            break;
+        default:
+            status = 'Ouverture Indeterminée';
+            cercleStatus = 'cercleInconnu';
+            classStatus = 'inconnuStatus';  // Classe pour "inconnu" par défaut
+            break;
+    }
+    divStatus.className = classStatus;
+    divStatus.innerHTML += `
+        <span id="${cercleStatus}"></span>
+        <p>${status}</p>`;
+
+
     const divAdress = document.getElementById("adresse");
     divAdress.innerHTML = '';
-    console.log(feature)
 
     if(feature.properties.address){
         const adr = formatAdress(feature.properties.address)
-        divAdress.innerHTML += `${adr}`;
+        divAdress.innerHTML += `<span><img src="./outil.png" alt=""></span>`;
+        divAdress.innerHTML += `<p>${adr}</p>`;
     }
 
 }

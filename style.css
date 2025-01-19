@@ -122,19 +122,89 @@
     border: none;
   }
 
- /*  #controls {
-    margin: 10px;
+  #info {
     display: flex;
-    align-items: center;
-    gap: 10px;
-  } */
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
 
-  /* #department-select,
-  #station-select {
-    padding: 5px;
-    font-size: 14px;
-  } */
+  #info div {
+    margin-bottom: 20px;
+  }
 
-  /* #station-select {
-    display: none;
-  } */
+  #info div:last-child {
+      margin-bottom: 0;
+  }
+
+
+  #status, #adresse {
+    display: flex;
+    align-items: center; 
+    gap: 30px; 
+    margin-bottom: 20px;
+    justify-content: center;
+
+  }
+
+  #cercleInconnu {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    border: 3px solid #3f3f3e;
+    z-index: 1001;
+    background-color: grey;
+  }
+
+  #cercleOuvert {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    border: 3px solid #0f4e11; /* Bordure verte */
+    z-index: 1001;
+    background-color: #4CAF50; /* Fond vert */
+  }
+
+  #cercleFerme {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    border: 3px solid #9c1b12; /* Bordure rouge */
+    z-index: 1001;
+    background-color: #f44336; /* Fond rouge */
+  }
+
+  .inconnuStatus {
+    color: #3f3f3e;
+  }
+
+  .fermeeStatus {
+    color: #f44336;
+  }
+
+  .ouvertStatus {
+    color: #4CAF50;
+  }
+
+  #status {
+    margin-top: 40px;
+  }
+
+  #status p {
+    width: 150px;
+  }
+
+  #adresse {
+    margin-top: 40px;
+  }
+  
+  #adresse p {
+    width: 150px;
+    font-size: 1em;
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+  }
+  #adresse img {
+    width: 50px;
+    height: 50px;
+  }

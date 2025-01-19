@@ -11,19 +11,37 @@ function trieJourSemaine(tab){
     return tab
 }
 
-/* function regrouperHorairesParJour(tab) {
-    let horairesParJour = tab.reduce((acc, current) => {
-        if (acc[current.jour_de_la_semaine]) {
-            acc[current.jour_de_la_semaine].push(current.horaire_en_jour_normal);
-        } else {
-            acc[current.jour_de_la_semaine] = [current.horaire_en_jour_normal];
-        }
-        return acc; // Retourne l'accumulateur à chaque itération
-    }, {}); // Initialise l'accumulateur comme un objet vide
 
-    return Object.entries(horairesParJour).map(([jour, horaires]) => ({
-        jour_de_la_semaine: jour,
-        horaires: horaires.join(", "),
-    }));
+function isGareOpen(horaires) {
+    if(!horaires){
+        return -1;
+    }
+    const maintenant = new Date();
+    const heureActuelle = maintenant.getUTCHours();
+    const minuteActuelle = maintenant.getUTCMinutes();
+
+    const horairesDuJour = horaires[maintenant.getUTCDay()];
+
+    if (!horairesDuJour || horairesDuJour.horaireNormaux.length === 0) {
+        return -1;
+    }
+
+    const estOuvert = horairesDuJour.horaireNormaux.some(plage => {
+        const [debut, fin] = plage.split('-'); 
+
+        const [heureDebut, minuteDebut] = debut.split(':').map(Number); 
+        const [heureFin, minuteFin] = fin.split(':').map(Number); 
+
+        const minutesActuelles = heureActuelle * 60 + minuteActuelle;
+        const minutesDebut = heureDebut * 60 + minuteDebut;
+        const minutesFin = heureFin * 60 + minuteFin;
+
+        if (minutesDebut > minutesFin) {
+            return minutesActuelles >= minutesDebut || minutesActuelles <= minutesFin;
+        } else {
+            return minutesActuelles >= minutesDebut && minutesActuelles <= minutesFin;
+        }
+    });
+
+    return estOuvert ? true : false;
 }
- */
