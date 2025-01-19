@@ -11,10 +11,6 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
-  .container2 {
-    
-  }
-
   .right{
     display: flex;
     gap: 10px;
@@ -55,7 +51,7 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    height: 100%; /* S'assure que le UL occupe toute la hauteur */
+    height: 100%;
     justify-content: space-between; 
   }
 
