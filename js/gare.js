@@ -14,11 +14,12 @@ window.onload = async () => {
     const horaires = await loadHorairesData();
     const accessibilites = await loadAccessibilites(); 
     const satisfaction = await loadSatisfaction();
-
+    
     attachHorairesToStations(geojsonData, horaires);
     attachAccessibiliteToStations(geojsonData, accessibilites);
-    //attachSatisfactionToStations(geojsonData, satisfaction);
+    attachSatisfactionToStations(geojsonData, satisfaction);
 
+    
     setupGeoJsonLayer(geojsonData);
     setupSearchBar(geojsonData);
     setupDepartmentSelect(geojsonData);
@@ -210,16 +211,7 @@ function buildAccessibilite(accessibilitesCSV) {
 
 }
 
-/* function buildSatisfaction(satisfactionCSV) {
-    return satisfactionCSV.reduce((acc, current) => {
-        const code_uic = current.CODE_UIC;
-        acc[code_uic].push(current.satisfactionGlobal)
-        acc[code_uic] = {
-            satisfactionGlobal: current.satisfactionGlobal
-        };
-        return acc;
-    }, {});
-} */
+
 
 
 
@@ -235,30 +227,13 @@ async function loadAccessibilites() {
 }
 
 async function loadSatisfaction() {
-    const response = await fetch("out1.csv");
-  
+    const response = await fetch("out.csv");
     const text = await response.text();
 
     const data = parseCSVToObject(text, ",");
-    console.log(data)
-
-    return data
+    return buildSatisfaction(data);
 }
 
-
-
-
-Promise.all([
-    fetch('geojson_file.geojson').then(res => res.json()),
-    fetch('out.csv').then(res => res.text())
-]).then(([geojsonData, csvData]) => {
-    const satisfactionCSV = parseCSV(csvData); // Fonction pour parser le CSV
-    const satisfaction = buildSatisfaction(satisfactionCSV);
-    attachSatisfactionToStations(geojsonData, satisfaction);
-
-    // Vérifiez les données finales
-    console.log("GeoJSON après ajout de satisfaction :", geojsonData);
-});
 
 function attachAccessibiliteToStations(geojsonData, accessibilites) {
     geojsonData.features.forEach(feature => {
@@ -273,20 +248,21 @@ function attachAccessibiliteToStations(geojsonData, accessibilites) {
 }
 
 function attachSatisfactionToStations(geojsonData, satisfaction) {
-  //console.log(satisfaction)
-    geojsonData.features.forEach(feature => {
-        const uic = feature.properties.CODE_UIC;
-        //console.log(`Recherche satisfaction pour ${uic}`);
-        const gareSatisfaction = satisfaction[uic];
-        //console.log(gareSatisfaction)
+  geojsonData.features.forEach(feature => {
+      const uic = feature.properties.code_uic;
+      const gareSatisfaction = satisfaction[uic];
 
-        if (gareSatisfaction) {
-            feature.properties.satisfactionGlobal = gareSatisfaction.satisfactionGlobal;
-            //console.log(`Satisfaction trouvée pour ${uic}:`, gareSatisfaction.satisfactionGlobal);
-        } else {
-            //console.log(`Pas de satisfaction pour ${feature.properties.libelle} (${uic})`);
-        }
-    });
+      if (gareSatisfaction && gareSatisfaction.length > 0) {
+          const satisfactionData = gareSatisfaction[0]; 
+          const obj = {
+              bien_etre_en_gare: satisfactionData.bien_etre_en_gare,
+              confort_attente: satisfactionData.confort_attente,
+              info_voyageur_et_orientation_client: satisfactionData.info_voyageur_et_orientation_client,
+              satisfaction_global: satisfactionData.satisfaction_global
+          };
+          feature.properties.satisfaction = Object.entries(obj);
+      }
+  });
 }
 
 
@@ -350,11 +326,12 @@ function attachSatisfactionToStations(geojsonData, satisfaction) {
 
 function buildSatisfaction(satisfactionCSV) {
     return satisfactionCSV.reduce((acc, current) => {
-        const code_uic = String(current.CODE_UIC).trim();    if (!acc[code_uic]) {
-        acc[code_uic] = [];
-    }
-    acc[code_uic].push(current);
-    return acc;
+        const code_uic = current.CODE_UIC 
+        if (!acc[code_uic]) {
+            acc[code_uic] = [];
+        }
+        acc[code_uic].push(current);
+        return acc;
     }, {});
 }
 
@@ -436,7 +413,6 @@ async function drawGareSelected(feature) {
         radius: 8           
     }).addTo(map);
     hoverMakerName(gareSelected, feature);
-    console.log(feature.properties.address)
     map.setView([coordinates[1], coordinates[0]], 10);
 }
   
@@ -514,27 +490,24 @@ async function drawGareSelected(feature) {
       }
   }
 
-  function afficherSatisfaction(feature) {
-    console.log(feature);
-    /* const divSatisfaction = document.getElementById("satisfaction");
+function afficherSatisfaction(feature) {
+    const divSatisfaction = document.getElementById("satisfaction");
     divSatisfaction.innerHTML = '';
 
-    if (feature.properties.satisfactionGlobal) {
-        const satisfaction = feature.properties.satisfactionGlobal;
+    if (feature.properties.satisfaction) {
+        const satisfaction = feature.properties.satisfaction;
+        satisfaction.forEach(([key, value]) => {
+          const div = document.createElement("div");
+          div.innerHTML = `
+            ${key.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase())} 
+            : ${(value !== undefined && value !== "") ? value : "Non disponible"}`;
 
-        divSatisfaction.innerHTML = `
-          <table class="satisfactionTableau">
-            <thead>
-              <tr><th>Satisfaction Globale</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>${satisfaction}</td></tr>
-            </tbody>
-          </table>
-        `;
+          divSatisfaction.appendChild(div);
+        })
+
     } else {
         divSatisfaction.innerHTML = `<p>Informations de satisfaction non disponibles.</p>`;
-    } */
+    }
 }
 
 
@@ -617,15 +590,6 @@ function afficheInfo(feature) {
 
 }
 
-// function afficheAccessibilites(feature) {
-//     const divAcc = document.getElementById("accessibilite");
-//     divAcc.innerHTML = '';
-//     if(feature.properties.accessibilites) {
-//         console.log(feature.properties.accessibilites);
-//     } else { 
-//         console.log("aucune accessibilité connue");
-//     }
-// }
 
 function afficheAccessibilites(feature) {
     const divAcc = document.getElementById("accessibilite");
