@@ -80,7 +80,7 @@ footer {
   
   #map {
     flex: 1;
-    height: 600px; 
+    height: 700px; 
     border: none;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center;
@@ -103,7 +103,7 @@ footer {
   
 
   #informations {
-    height: 600px;
+    height: 700px; 
     flex: 1;
     text-align: center;
     position: relative;
@@ -120,7 +120,7 @@ footer {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to bottom, rgba(204, 176, 134, 0.5), rgba(0, 0, 0, 0.5));
+    background: linear-gradient(to bottom, rgba(209, 197, 179, 0.84), rgba(200, 197, 197, 0.5));
     z-index: -1;
   }
   
