@@ -4,7 +4,7 @@ import { departementSelect, handleDepartmentChange } from "./filter";
 import { afficherHoraires, afficherMenu, afficherSection, afficherNomGare } from "./affichage";
 
  */
- let map, geojsonLayer, geojsonData, gareSelected = null
+let map, geojsonLayer, geojsonData, gareSelected = null
 
 window.onload = async () => {
   try {
@@ -13,9 +13,11 @@ window.onload = async () => {
     geojsonData = await loadGeojsonData();
     const horaires = await loadHorairesData();
     const accessibilites = await loadAccessibilites(); 
+    const satisfaction = await loadSatisfaction();
 
     attachHorairesToStations(geojsonData, horaires);
     attachAccessibiliteToStations(geojsonData, accessibilites);
+    attachSatisfactionToStations(geojsonData, satisfaction);
 
     setupGeoJsonLayer(geojsonData);
     setupSearchBar(geojsonData);
@@ -209,6 +211,21 @@ function buildAccessibilite(accessibilitesCSV) {
 
 }
 
+function buildSatisfaction(satisfactionCSV) {
+    console.log("Données CSV :", satisfactionCSV); // Debug
+    return satisfactionCSV.reduce((acc, current) => {
+        const code_uic = current.CODE_UIC;
+        acc[code_uic] = {
+            satisfactionGlobal: current.satisfactionGlobal
+        };
+        return acc;
+    }, {});
+}
+
+
+
+
+
 async function loadAccessibilites() {
     const response = await fetch("equipements-accessibilite-en-gares.csv");
     const text = await response.text();
@@ -218,6 +235,29 @@ async function loadAccessibilites() {
     return buildAccessibilite(data);
 }
 
+async function loadSatisfaction() {
+    const response = await fetch("out.csv");
+    const text = await response.text();
+
+    const data = parseCSVToObject(text);
+
+    return buildSatisfaction(data);
+}
+
+
+
+
+Promise.all([
+    fetch('geojson_file.geojson').then(res => res.json()),
+    fetch('out.csv').then(res => res.text())
+]).then(([geojsonData, csvData]) => {
+    const satisfactionCSV = parseCSV(csvData); // Fonction pour parser le CSV
+    const satisfaction = buildSatisfaction(satisfactionCSV);
+    attachSatisfactionToStations(geojsonData, satisfaction);
+
+    // Vérifiez les données finales
+    console.log("GeoJSON après ajout de satisfaction :", geojsonData);
+});
 
 function attachAccessibiliteToStations(geojsonData, accessibilites) {
     geojsonData.features.forEach(feature => {
@@ -230,6 +270,23 @@ function attachAccessibiliteToStations(geojsonData, accessibilites) {
     })
 
 }
+
+function attachSatisfactionToStations(geojsonData, satisfaction) {
+    geojsonData.features.forEach(feature => {
+        const uic = String(feature.properties.code_uic).trim();
+        console.log(`Recherche satisfaction pour ${uic}`); // Debug
+        const gareSatisfaction = satisfaction[uic];
+
+        if (gareSatisfaction) {
+            feature.properties.satisfactionGlobal = gareSatisfaction.satisfactionGlobal;
+            console.log(`Satisfaction trouvée pour ${uic}:`, gareSatisfaction.satisfactionGlobal);
+        } else {
+            console.log(`Pas de satisfaction pour ${feature.properties.libelle} (${uic})`);
+        }
+    });
+}
+
+
 
 /* gestion horaires */
  function attachHorairesToStations(geojsonData, horaires) {
@@ -286,6 +343,16 @@ function attachAccessibiliteToStations(geojsonData, accessibilites) {
       acc[gare].push(current);
       return acc;
       }, {});
+}
+
+function buildSatisfaction(satisfactionCSV) {
+    return satisfactionCSV.reduce((acc, current) => {
+        const code_uic = String(current.CODE_UIC).trim();    if (!acc[code_uic]) {
+        acc[code_uic] = [];
+    }
+    acc[code_uic].push(current);
+    return acc;
+    }, {});
 }
 
 /* gestion des gares et listes des gares */
@@ -444,6 +511,28 @@ async function drawGareSelected(feature) {
       }
   }
 
+  function afficherSatisfaction(feature) {
+    const divSatisfaction = document.getElementById("satisfaction");
+    divSatisfaction.innerHTML = '';
+
+    if (feature.properties.satisfactionGlobal) {
+        const satisfaction = feature.properties.satisfactionGlobal;
+
+        divSatisfaction.innerHTML = `
+          <table class="satisfactionTableau">
+            <thead>
+              <tr><th>Satisfaction Globale</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>${satisfaction}</td></tr>
+            </tbody>
+          </table>
+        `;
+    } else {
+        divSatisfaction.innerHTML = `<p>Informations de satisfaction non disponibles.</p>`;
+    }
+}
+
 
 function formatAdress(adresse) {
     let adressComplete = '';
@@ -564,6 +653,7 @@ function affiche_tout(feature) {
     afficherMenu();
     afficherHoraires(feature);
     afficheAccessibilites(feature);
+    afficherSatisfaction(feature);
     afficheInfo(feature);
 }
 
