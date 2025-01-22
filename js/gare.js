@@ -511,7 +511,7 @@ async function drawGareSelected(feature) {
       }
   }
 
-  function afficherSatisfaction(feature) {
+  /*function afficherSatisfaction(feature) {
     const divSatisfaction = document.getElementById("satisfaction");
     divSatisfaction.innerHTML = '';
 
@@ -531,7 +531,7 @@ async function drawGareSelected(feature) {
     } else {
         divSatisfaction.innerHTML = `<p>Informations de satisfaction non disponibles.</p>`;
     }
-}
+}*/
 
 
 function formatAdress(adresse) {
