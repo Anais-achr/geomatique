@@ -17,7 +17,7 @@ window.onload = async () => {
 
     attachHorairesToStations(geojsonData, horaires);
     attachAccessibiliteToStations(geojsonData, accessibilites);
-    attachSatisfactionToStations(geojsonData, satisfaction);
+    //attachSatisfactionToStations(geojsonData, satisfaction);
 
     setupGeoJsonLayer(geojsonData);
     setupSearchBar(geojsonData);
@@ -173,19 +173,18 @@ function hoverMakerName(layer, feature) {
     return await geojsonResponse.json();
 }
 
-function parseCSVToObject(csv) {
+function parseCSVToObject(csv, separator) {
     const lignes = csv.split("\n"); 
-    const header = lignes[0].split(";");
+    const header = lignes[0].split(separator);
     const data = lignes.slice(1).map((ligne) => {
-      const valeurs = ligne.split(";");
+      const valeurs = ligne.split(separator);
       return header.reduce((acc, key, index) => {
         const value = valeurs[index]?.trim();
-  
+        
         acc[key.trim()] = value;
         return acc;
       }, {});
     });
-
     return data;
 }
 
@@ -193,7 +192,7 @@ async function loadHorairesData() {
     const response = await fetch("horaires-des-gares1.csv");
     const text = await response.text();
   
-    const data = parseCSVToObject(text);
+    const data = parseCSVToObject(text, ";");
   
     return buildHoraires(data);
 }
@@ -211,16 +210,16 @@ function buildAccessibilite(accessibilitesCSV) {
 
 }
 
-function buildSatisfaction(satisfactionCSV) {
-    console.log("Données CSV :", satisfactionCSV); // Debug
+/* function buildSatisfaction(satisfactionCSV) {
     return satisfactionCSV.reduce((acc, current) => {
         const code_uic = current.CODE_UIC;
+        acc[code_uic].push(current.satisfactionGlobal)
         acc[code_uic] = {
             satisfactionGlobal: current.satisfactionGlobal
         };
         return acc;
     }, {});
-}
+} */
 
 
 
@@ -230,18 +229,20 @@ async function loadAccessibilites() {
     const response = await fetch("equipements-accessibilite-en-gares.csv");
     const text = await response.text();
 
-    const data = parseCSVToObject(text);
+    const data = parseCSVToObject(text, ";");
 
     return buildAccessibilite(data);
 }
 
 async function loadSatisfaction() {
-    const response = await fetch("out.csv");
+    const response = await fetch("out1.csv");
+  
     const text = await response.text();
 
-    const data = parseCSVToObject(text);
+    const data = parseCSVToObject(text, ",");
+    console.log(data)
 
-    return buildSatisfaction(data);
+    return data
 }
 
 
@@ -272,16 +273,18 @@ function attachAccessibiliteToStations(geojsonData, accessibilites) {
 }
 
 function attachSatisfactionToStations(geojsonData, satisfaction) {
+  //console.log(satisfaction)
     geojsonData.features.forEach(feature => {
-        const uic = String(feature.properties.code_uic).trim();
-        console.log(`Recherche satisfaction pour ${uic}`); // Debug
+        const uic = feature.properties.CODE_UIC;
+        //console.log(`Recherche satisfaction pour ${uic}`);
         const gareSatisfaction = satisfaction[uic];
+        //console.log(gareSatisfaction)
 
         if (gareSatisfaction) {
             feature.properties.satisfactionGlobal = gareSatisfaction.satisfactionGlobal;
-            console.log(`Satisfaction trouvée pour ${uic}:`, gareSatisfaction.satisfactionGlobal);
+            //console.log(`Satisfaction trouvée pour ${uic}:`, gareSatisfaction.satisfactionGlobal);
         } else {
-            console.log(`Pas de satisfaction pour ${feature.properties.libelle} (${uic})`);
+            //console.log(`Pas de satisfaction pour ${feature.properties.libelle} (${uic})`);
         }
     });
 }
@@ -511,8 +514,9 @@ async function drawGareSelected(feature) {
       }
   }
 
-  /*function afficherSatisfaction(feature) {
-    const divSatisfaction = document.getElementById("satisfaction");
+  function afficherSatisfaction(feature) {
+    console.log(feature);
+    /* const divSatisfaction = document.getElementById("satisfaction");
     divSatisfaction.innerHTML = '';
 
     if (feature.properties.satisfactionGlobal) {
@@ -530,8 +534,8 @@ async function drawGareSelected(feature) {
         `;
     } else {
         divSatisfaction.innerHTML = `<p>Informations de satisfaction non disponibles.</p>`;
-    }
-}*/
+    } */
+}
 
 
 function formatAdress(adresse) {
@@ -629,8 +633,8 @@ function afficheAccessibilites(feature) {
 
     if (feature.properties.accessibilites && feature.properties.accessibilites.length > 0) {
         const titre = document.createElement("h3");
-        titre.textContent = "Accessibilités disponibles :";
-        divAcc.appendChild(titre);
+        /* titre.textContent = "Accessibilités disponibles :";
+        divAcc.appendChild(titre); */
 
         const liste = document.createElement("ul");
 
@@ -652,9 +656,9 @@ function affiche_tout(feature) {
     afficherNomGare(feature.properties.libelle);
     afficherMenu();
     afficherHoraires(feature);
+    afficheInfo(feature);
     afficheAccessibilites(feature);
     afficherSatisfaction(feature);
-    afficheInfo(feature);
 }
 
 
