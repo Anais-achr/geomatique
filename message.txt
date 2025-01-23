@@ -74,13 +74,12 @@ footer {
 
 #doc {
     display: flex; 
-    gap: 2px;
+    gap: 10px;
     font-family: 'Roboto', sans-serif;
   }
   
   #map {
     flex: 2.5;
-    width: 60%;
     height: 100vh; 
     border: none;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -109,8 +108,7 @@ footer {
     text-align: center;
     position: relative;
     padding: 20px;
-    /* border: 2px solid rgba(0, 0, 0, 0.1); */
-    border-left: 1px solid rgb(68, 67, 67);
+    border: 2px solid rgba(0, 0, 0, 0.1);
     border-radius: 10px;
     z-index: 0;
   }
@@ -318,19 +316,8 @@ footer {
       background-color: rgba(216, 216, 216, 0.281);
       top: 0;
       margin-top: 50px;
+      
     }
-
-    #accessibilite ul {
-      list-style-type: none;
-      text-align: left;
-    }
-
-    #accessibilite ul>li {
-      background-color: #662483;
-      margin: 2px;
-    }
-
-
 
 
   
