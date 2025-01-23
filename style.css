@@ -14,7 +14,7 @@ body {
   height: 100vh;
   color: white;
   padding: 20px;
-  background: url('train.jpg') no-repeat center center/cover; 
+  background: url('./img/train.jpg') no-repeat center center/cover; 
   position: relative;
 }
 
@@ -134,7 +134,7 @@ footer {
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('train.jpg') no-repeat center center;
+    background: url('./img/train.jpg') no-repeat center center;
     background-size: cover;
     filter: blur(5px);
     z-index: -1;
@@ -493,4 +493,248 @@ footer {
 .search-container button:hover {
   background: #ffcc00;
   color: white;
+}
+
+#accessibilite ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+#accessibilite ul > li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #f0dff8;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 5px;
+  color: black;
+  font-size: 1em;
+  font-family: 'Roboto', sans-serif;
+  font-weight: bold;
+}
+
+#accessibilite ul > li img {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px; 
+}
+
+#accessibilite ul > li:hover {
+  background-color: white; 
+}
+
+
+  
+  
+
+  tbody > tr:hover {
+    background-color: rgb(237 238 242);
+  }
+
+  #department-select,
+#station-select {
+  z-index: 10;
+  width: 60%;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 16px;
+  border: 2px solid #6200ea; 
+  border-radius: 5px;
+  background: #f3e5f5; 
+  color: #333; 
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+
+#status, #adresse {
+  display: flex;
+  align-items: center; 
+  justify-content: center;
+
+}
+
+#cercleInconnu {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border: 3px solid #20201f;
+  z-index: 1001;
+  background-color: rgb(88, 88, 88);
+}
+
+#cercleOuvert {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border: 3px solid #0f4e11; 
+  z-index: 1001;
+  background-color: #4CAF50; 
+}
+
+#cercleFerme {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border: 3px solid #9c1b12; 
+  z-index: 1001;
+  background-color: #f44336; 
+}
+
+.inconnuStatus {
+  color: rgb(58, 57, 57);
+}
+
+.fermeeStatus {
+  color: #f44336;
+}
+
+.ouvertStatus {
+  color: #0f4e11;
+}
+
+#status {
+  margin-top: 20px;
+}
+
+#status p {
+  width: 150px;
+}
+
+
+#adresse p {
+  width: 150px;
+  font-size: 1em;
+  text-align: center;
+  font-family: 'Courier New', Courier, monospace;
+}
+#adresse img {
+  width: 50px;
+  height: 50px;
+}
+
+
+
+/* Barre de navigation */
+#sncf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: linear-gradient(to right, #d9042b, #662483, #321450); ;
+  color: white;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Logo */
+#sncf .logo img {
+  height: 60px; 
+  max-height: 100%;
+  width: auto; 
+}
+
+/* Navigation */
+#sncf nav ul {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+}
+
+#sncf nav ul li {
+  margin: 0 15px;
+}
+
+#sncf nav ul li a {
+  text-decoration: none;
+  color: white;
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+#sncf nav ul li a:hover {
+  color: #ffcc00;
+}
+
+/* Barre de recherche */
+.search-container {
+  display: flex;
+}
+
+.search-container input[type="text"] {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.search-container button {
+  background: white;
+  border: none;
+  padding: 5px 10px;
+  margin-left: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #363795;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.search-container button:hover {
+  background: #ffcc00;
+  color: white;
+}
+
+
+
+#satisfaction {
+  height: 100%;
+  background-color: rgba(216, 216, 216, 0.281);
+  top: 0;
+  margin-top: 50px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  
+}
+
+#satisfaction div {
+  background-color: rgba(169, 167, 167, 0.281);
+  margin: 2px;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#satisfaction div p {
+  margin: 0;
+}
+.cercleProgression {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border: 3px solid #20201f;
+  z-index: 1001;
+  background-color: rgb(88, 88, 88);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1em; 
+  color: rgb(56, 54, 54); 
+  font-weight: bold;
+  position: relative;
+}
+
+.cercleProgression.noteInconnue {
+  background: conic-gradient(#e0e0e0 100%, #e0e0e0 100%);
+}
+
+.cercleProgression .circletext {
+  position: absolute;
+  z-index: 2;
 }

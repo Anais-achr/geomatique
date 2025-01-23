@@ -1,3 +1,0 @@
-import { geojsonData } from "./gare";
-
-

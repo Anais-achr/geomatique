@@ -57,9 +57,10 @@ function updateGareList(geojsonData) {
         return;
     }
 
-    const gares = geojsonData.features
+    const gares = [...new Set(geojsonData.features
         .map(feature => feature.properties.libelle)
-        .filter(gare => gare.toLowerCase().includes(valueInput.toLowerCase()));
+        .filter(gare => gare.toLowerCase().startsWith(valueInput.toLowerCase())))];
+
 
     gareList.style.display = gares.length ? "block" : "none";
 
@@ -255,10 +256,11 @@ function attachSatisfactionToStations(geojsonData, satisfaction) {
       if (gareSatisfaction && gareSatisfaction.length > 0) {
           const satisfactionData = gareSatisfaction[0]; 
           const obj = {
-              bien_etre_en_gare: satisfactionData.bien_etre_en_gare,
-              confort_attente: satisfactionData.confort_attente,
-              info_voyageur_et_orientation_client: satisfactionData.info_voyageur_et_orientation_client,
-              satisfaction_global: satisfactionData.satisfaction_global
+            satisfaction_global: satisfactionData.satisfaction_global,
+            orientation_client: satisfactionData.orientation_client,
+            confort_attente: satisfactionData.confort_attente,
+            bien_etre_en_gare: satisfactionData.bien_etre_en_gare
+              
           };
           feature.properties.satisfaction = Object.entries(obj);
       }
@@ -498,10 +500,31 @@ function afficherSatisfaction(feature) {
         const satisfaction = feature.properties.satisfaction;
         satisfaction.forEach(([key, value]) => {
           const div = document.createElement("div");
-          div.innerHTML = `
-            ${key.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase())} 
-            : ${(value !== undefined && value !== "") ? value : "Non disponible"}`;
+          const circle = document.createElement("span");
+          circle.classList.add("cercleProgression");
+          circle.classList.add("circletext");
 
+          div.innerHTML = `<p>${key.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase())}</p>`;
+
+          if(value === undefined || value === "" || value === null || value === '-') {
+            circle.innerHTML = "?";
+            circle.style.background = `rgb(195, 192, 192)`
+          } else {
+            circle.classList.remove("noteInconnue");
+            const pourcentage = (value / 10) * 100;
+
+            let color;
+            if(value <= 3){
+                color = "#FF3B30";
+            }else if (value <= 7) {
+                color = "#FFCC00";
+            } else {
+                color = "#4CAF50";
+            }
+            circle.style.background = `conic-gradient(${color} ${pourcentage}%, #e0e0e0 ${pourcentage}%)`;
+            circle.innerText = `${value}`;
+          }
+          div.appendChild(circle)
           divSatisfaction.appendChild(div);
         })
 
@@ -584,7 +607,7 @@ function afficheInfo(feature) {
 
     if(feature.properties.address){
         const adr = formatAdress(feature.properties.address)
-        divAdress.innerHTML += `<span><img src="./outil.png" alt=""></span>`;
+        divAdress.innerHTML += `<span><img src="./img/outil.png" alt=""></span>`;
         divAdress.innerHTML += `<p>${adr}</p>`;
     }
 
@@ -596,15 +619,58 @@ function afficheAccessibilites(feature) {
     divAcc.innerHTML = '';
 
     if (feature.properties.accessibilites && feature.properties.accessibilites.length > 0) {
-        const titre = document.createElement("h3");
-        /* titre.textContent = "Accessibilités disponibles :";
-        divAcc.appendChild(titre); */
-
         const liste = document.createElement("ul");
 
         feature.properties.accessibilites.forEach(accessibilite => {
             const item = document.createElement("li");
-            item.textContent = accessibilite;
+            
+            // Ajout d'une icône en fonction de l'accessibilité
+            const icon = document.createElement("img");
+            icon.alt = accessibilite;
+            icon.className = "icon-accessibilite";
+
+            // Attribution des icônes selon le type d'accessibilité
+            switch (accessibilite) {
+                case 'Toilettes':
+                    icon.src = '/img/toilettes.jpeg';
+                    break;
+                case 'Toilettes adaptées aux personnes en fauteuil roulant':
+                    icon.src = '/img/toilettes-adaptees.png';
+                    break;
+                case 'Assistance proposée pour accéder aux quais et monter / descendre du train':
+                    icon.src = '/img/assistance.png';
+                    break;
+                case 'Information sonore en gare et/ou sur les quais':
+                    icon.src = '/img/info-sonore.png';
+                    break;
+                case 'Bande d\'éveil de vigilance sur les quais':
+                    icon.src = '/img/bande-vigilance.png';
+                    break;
+                case 'Présence du personnel':
+                    icon.src = '/img/personnel.png';
+                    break;
+                case 'Écrans d\'information en gare et/ou sur les quais':
+                    icon.src = '/img/ecrans-info.jpg';
+                    break;
+                case 'Boucle à induction magnétique':
+                        icon.src = '/img/induction.png';
+                        break;
+                case 'Fauteuil roulant à disposition':
+                        icon.src = '/img/fauteuil_roulant.jpg';
+                        break;     
+                case 'Accès par ascenseur, rampe ou de plain-pied, depuis l\'entrée':
+                        icon.src = '/img/ascenseur.gif';
+                        break;
+                default:
+                    icon.src = './icons/default.png';
+                    break;
+            }
+
+            item.appendChild(icon);
+            const text = document.createElement("span");
+            text.textContent = accessibilite;
+            item.appendChild(text);
+
             liste.appendChild(item);
         });
 
