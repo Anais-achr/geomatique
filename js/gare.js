@@ -1,9 +1,3 @@
-/* import { initializeMap } from "./map";
-import { loadGeojsonData, loadHorairesData, attachHorairesToStations } from "./data";
-import { departementSelect, handleDepartmentChange } from "./filter";
-import { afficherHoraires, afficherMenu, afficherSection, afficherNomGare } from "./affichage";
-
- */
 let map, geojsonLayer, geojsonData, gareSelected = null
 
 window.onload = async () => {
@@ -31,22 +25,122 @@ window.onload = async () => {
   }
 };
 
+//map et geojson data
+
+/**
+ * créer une couche GeoJson
+ */
+function createGeoJsonLayer(geojsonData) {
+    return L.geoJSON(geojsonData, {
+      onEachFeature: (feature, layer) => {
+        setTimeout(() => {
+          layer.on('click', () => { //affichage des données des gares au clique d'un marker
+              affiche_tout(feature);
+          });
+
+          hoverMakerName(layer, feature); //hover sur les marker pour le nom des gares
+        }, 100);
+
+
+        
+      },
+      pointToLayer: (feature, latlng) => {
+        return L.circleMarker(latlng, {
+          radius: 6,
+          fillColor: "#007bff",
+          color: "#000",
+          weight: 1,
+          opacity: 1,
+          fillOpacity: 0.8
+        });
+      }
+    });
+}
+
+/**
+ * Initilalise le geoLayer avec les données geojsondata et les ajotue à la map
+ */
 
 function setupGeoJsonLayer(geojsonData) {
     geojsonLayer = createGeoJsonLayer(geojsonData);
     geojsonLayer.addTo(map);
 }
 
+/**
+ * initialise une map
+ */
+function initializeMap() {
+    map = L.map('map', {
+      center: [48.4, 2.5],
+      zoom: 6
+    });
+  
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+      maxZoom: 20,
+    }).addTo(map);
+}
 
+/**
+ * reinitialise la map avec ses données de base, sans les filtres
+ */
+function resetMap() {
+    if (geojsonLayer) {
+        map.removeLayer(geojsonLayer);
+    }
+    if(gareSelected) {
+        map.removeLayer(gareSelected);
+    }
+    geojsonLayer = createGeoJsonLayer(geojsonData);
+    geojsonLayer.addTo(map);
+}
+
+/**
+ * permet au survol d'un marker d'afficher le nom de la gare
+ */
+function hoverMakerName(layer, feature) {
+    layer.bindPopup(feature.properties.libelle)
+            .on('mouseover', function (e) {
+            this.openPopup();
+          })
+            .on('mouseout', function (e) {
+            this.closePopup();
+          });
+}
+
+/**
+ * dessine un cercle d'une couleur differente sur le marker selectionné poru le mettre en évidence 
+ */
+async function drawGareSelected(feature) {
+    resetMap();
+    const coordinates = feature.geometry.coordinates;
+    gareSelected = L.circleMarker([coordinates[1], coordinates[0]], {
+        color: 'red',        
+        fillColor: 'red',    
+        fillOpacity: 0.8,    
+        radius: 8           
+    }).addTo(map);
+    hoverMakerName(gareSelected, feature);
+    map.setView([coordinates[1], coordinates[0]], 10);
+}
+
+
+//recherche d'une gare avec la barre de recherche
+
+/**
+ *  initialise la barre de recherche
+ * */ 
 function setupSearchBar(geojsonData) {
     const inputS = document.getElementById("gareSearch");
     
-
+    //mettre à jour la liste des gare à chaque entrée/supression dans la barre de recherche
     inputS.addEventListener("input", () => {
         updateGareList(geojsonData); 
     });
 }
-
+/**
+ *  met à jour la liste des gares en fonction du contenue de la barre de recherche
+ */
 function updateGareList(geojsonData) {
     const inputS = document.getElementById("gareSearch");
     const gareList = document.getElementById("resultGareSearch");
@@ -57,6 +151,7 @@ function updateGareList(geojsonData) {
         return;
     }
 
+    //utilisation de Set pour eviter les doublons dans la liste
     const gares = [...new Set(geojsonData.features
         .map(feature => feature.properties.libelle)
         .filter(gare => gare.toLowerCase().startsWith(valueInput.toLowerCase())))];
@@ -66,6 +161,7 @@ function updateGareList(geojsonData) {
 
     gareList.innerHTML = "";
 
+    //affichage en liste à puce
     gares.forEach(gare => {
         const newLi = document.createElement("li");
         newLi.textContent = gare;
@@ -77,6 +173,71 @@ function updateGareList(geojsonData) {
     });
 }
 
+/**
+ * affiche les information d'une gare selectionnée de la liste de la barre de recherche
+ */
+function selectGare(gare, geojsonData) {
+    const inputS = document.getElementById("gareSearch");
+    const formSearch = document.getElementById("gareForm");
+    
+    inputS.value = gare;
+    
+    //on recupere la feature de la gare choisie dans laliste des gares de la barre e recherche puis on l'affiche
+    const feature = geojsonData.features.find(f => f.properties.libelle.toLowerCase() === gare.toLowerCase());
+    if(feature){
+      affiche_tout(feature)
+    }
+  
+    formSearch.addEventListener("submit", () => e => e.preventDefault());
+  
+    inputS.value = "";
+}
+
+
+//recherche du'ne agre avec les departmeents
+
+/**
+ * initialise la liste des departements selects
+ */
+function setupDepartmentOptions(geojsonData, departmentSelect) {
+    const departments = [...new Set(geojsonData.features.map(f => f.properties.departemen))].sort();
+    departments.forEach(dept => {
+      const option = document.createElement('option');
+      option.value = dept;
+      option.textContent = dept;
+      departmentSelect.appendChild(option);
+    });
+}
+
+/**
+ * gère le changement de départmeent et met à jour la carte avec les données correspondantes
+ */
+function handleDepartmentChange(department, geojsonData) {
+    if (geojsonLayer) {
+      map.removeLayer(geojsonLayer);
+    }
+  
+    const filteredData = {
+      type: "FeatureCollection",
+      features: department === "all"
+        ? resetMap()
+        : geojsonData.features.filter(f => f.properties.departemen === department)
+    };
+  
+    geojsonLayer = createGeoJsonLayer(filteredData);
+    geojsonLayer.addTo(map);
+  
+    const bounds = geojsonLayer.getBounds();
+    if (bounds.isValid()) {
+      map.fitBounds(bounds);
+    }
+  
+    updateStationList(filteredData.features);
+}
+
+/**
+ * initialise la selection des departmeents et configure l'évenement de changement
+ */
 function setupDepartmentSelect(geojsonData) {
     const departmentSelect = document.getElementById('department-select');
     setupDepartmentOptions(geojsonData, departmentSelect);
@@ -86,6 +247,9 @@ function setupDepartmentSelect(geojsonData) {
     });
 }
 
+/**
+ * initialise la selection de gare et configure l'évenement de changement
+ */
 function setupStationSelect(geojsonData) {
     const stationSelect = document.getElementById("station-select");
     stationSelect.addEventListener('change', () => {
@@ -103,173 +267,123 @@ function setupStationSelect(geojsonData) {
     });
 }
 
-/* map */
-function initializeMap() {
-    map = L.map('map', {
-      center: [48.4, 2.5],
-      zoom: 6
-    });
+/**
+ * met à jhour la liste des gare
+ */
+function updateStationList(features) {
+    const stationSelect = document.getElementById("station-select");
+    stationSelect.innerHTML = ''; 
   
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
-      subdomains: 'abcd',
-      maxZoom: 20,
-      noWrap: true 
-    }).addTo(map);
-}
-
-function resetMap() {
-    if (geojsonLayer) {
-        map.removeLayer(geojsonLayer);
-    }
-    if(gareSelected) {
-        map.removeLayer(gareSelected);
-    }
-    geojsonLayer = createGeoJsonLayer(geojsonData);
-    geojsonLayer.addTo(map);
-}
-
-function hoverMakerName(layer, feature) {
-    layer.bindPopup(feature.properties.libelle)
-            .on('mouseover', function (e) {
-            this.openPopup();
-          })
-            .on('mouseout', function (e) {
-            this.closePopup();
-          });
-}
-
-
- function createGeoJsonLayer(geojsonData) {
-    return L.geoJSON(geojsonData, {
-      onEachFeature: (feature, layer) => {
-        setTimeout(() => {
-          layer.on('click', () => {
-              affiche_tout(feature);
-          });
-
-          hoverMakerName(layer, feature);
-        }, 100);
-
-
-        
-      },
-      pointToLayer: (feature, latlng) => {
-        return L.circleMarker(latlng, {
-          radius: 6,
-          fillColor: "#007bff",
-          color: "#000",
-          weight: 1,
-          opacity: 1,
-          fillOpacity: 0.8
-        });
-      }
+    features.forEach(f => {
+      const option = document.createElement('option');
+      option.value = JSON.stringify(f.geometry.coordinates);
+      option.textContent = f.properties.libelle;
+      stationSelect.appendChild(option);
     });
-  }
+}
 
 
-/* data */
- async function loadGeojsonData() {
-    const geojsonResponse = await fetch("liste-des-gares.geojson");
+//informations sur es gares
+/**
+ * recupère les données des gare du fichier 'liste-des-gares.geojson.
+ * 
+ * Ce fichier contient pour chaque gare des informations comme : le code uic, son nom, adresse, coordonnées geographique (lat, long)...
+ *  
+ */
+async function loadGeojsonData() {
+    const geojsonResponse = await fetch("../data/liste-des-gares.geojson");
     return await geojsonResponse.json();
 }
 
-function parseCSVToObject(csv, separator) {
-    const lignes = csv.split("\n"); 
-    const header = lignes[0].split(separator);
-    const data = lignes.slice(1).map((ligne) => {
-      const valeurs = ligne.split(separator);
-      return header.reduce((acc, key, index) => {
-        const value = valeurs[index]?.trim();
-        
-        acc[key.trim()] = value;
-        return acc;
-      }, {});
-    });
-    return data;
+/**
+ * Affiche les informations d'une gare dans la section "info". L'état d'ouverture et l'adresse de la gare y sont affichés
+ */
+function afficheInfo(feature) {
+    const divStatus = document.getElementById("status");
+    divStatus.innerHTML = '';
+    let classStatus;
+    let cercleStatus;
+    let status;
+  
+    const horaires = feature?.properties?.horaires;
+  
+    switch (isGareOpen(horaires)) {
+        case -1:
+        case undefined:
+            status = 'Ouverture Indeterminée';
+            cercleStatus = 'cercleInconnu';
+            classStatus = 'inconnuStatus';  
+            break;
+        case true:
+            status = 'Ouvert';
+            cercleStatus = 'cercleOuvert';
+            classStatus = 'ouvertStatus';  
+            break;
+        case false:
+            status = 'Fermée';
+            cercleStatus = 'cercleFerme';
+            classStatus = 'fermeeStatus';  
+            break;
+        default:
+            status = 'Ouverture Indeterminée';
+            cercleStatus = 'cercleInconnu';
+            classStatus = 'inconnuStatus';  
+            break;
+    }
+    divStatus.className = classStatus;
+    divStatus.innerHTML += `
+        <span id="${cercleStatus}"></span>
+        <p>${status}</p>`;
+  
+  
+    const divAdress = document.getElementById("adresse");
+    divAdress.innerHTML = '';
+  
+    if(feature.properties.address){
+        const adr = formatAdress(feature.properties.address)
+        divAdress.innerHTML += `<span><img src="../img/outil.png" alt=""></span>`;
+        divAdress.innerHTML += `<p>${adr}</p>`;
+    }
+  
 }
+  
 
+
+//horaires
+
+/**
+ * recupère les horaires des gares.
+ *  
+ */
 async function loadHorairesData() {
-    const response = await fetch("horaires-des-gares1.csv");
+    const response = await fetch("../data/horaires-des-gares1.csv");
     const text = await response.text();
   
     const data = parseCSVToObject(text, ";");
   
     return buildHoraires(data);
 }
-/* accessibilité */
-function buildAccessibilite(accessibilitesCSV) {
-    return accessibilitesCSV.reduce((acc, current)  => {
-        const gare = current.UIC;
 
-        if (!acc[gare]) {
-            acc[gare] = [];
-        }
-        acc[gare].push(current.accessibilite);
-        return acc;
-    }, {})
-
+/**
+ * Met en forme l'objet des horaires des gares: réunis les horaires par gare
+ */
+function buildHoraires(horairesCSV) {
+    return horairesCSV.reduce((acc, current) => {
+    const gare = current.gare;
+    if (!acc[gare]) {
+        acc[gare] = [];
+    }
+    acc[gare].push(current);
+    return acc;
+    }, {});
 }
 
-
-
-
-
-
-
-async function loadAccessibilites() {
-    const response = await fetch("equipements-accessibilite-en-gares.csv");
-    const text = await response.text();
-
-    const data = parseCSVToObject(text, ";");
-
-    return buildAccessibilite(data);
-}
-
-async function loadSatisfaction() {
-    const response = await fetch("out.csv");
-    const text = await response.text();
-
-    const data = parseCSVToObject(text, ",");
-    return buildSatisfaction(data);
-}
-
-
-function attachAccessibiliteToStations(geojsonData, accessibilites) {
-    geojsonData.features.forEach(feature => {
-        const uic = feature.properties.code_uic;
-        const gare = accessibilites[uic];
-
-        if(gare) {
-            feature.properties.accessibilites = Object.values(gare);
-        }
-    })
-
-}
-
-function attachSatisfactionToStations(geojsonData, satisfaction) {
-  geojsonData.features.forEach(feature => {
-      const uic = feature.properties.code_uic;
-      const gareSatisfaction = satisfaction[uic];
-
-      if (gareSatisfaction && gareSatisfaction.length > 0) {
-          const satisfactionData = gareSatisfaction[0]; 
-          const obj = {
-            satisfaction_global: satisfactionData.satisfaction_global,
-            orientation_client: satisfactionData.orientation_client,
-            confort_attente: satisfactionData.confort_attente,
-            bien_etre_en_gare: satisfactionData.bien_etre_en_gare
-              
-          };
-          feature.properties.satisfaction = Object.entries(obj);
-      }
-  });
-}
-
-
-
-/* gestion horaires */
- function attachHorairesToStations(geojsonData, horaires) {
+/**
+ * associe les horaires des gares à leur correspondance dans le GeoJSON.
+ *
+ * Avec l'objet contenant les horaires des gares, on les attache à leur gare correspondante dans le GeoJSON en créant une nouvelle propriété "horaires".
+ */
+function attachHorairesToStations(geojsonData, horaires) {
     geojsonData.features.forEach(feature => {
         const libelle = feature.properties.libelle;
         const gare = horaires[libelle];
@@ -308,318 +422,113 @@ function attachSatisfactionToStations(geojsonData, satisfaction) {
     })
 }
 
-
 /**
- * Le fichier CSV des horaires contient pour chaque jour de la semaien un horaire pour la gare, cette fonction regroupe pour chazque gare, ses horaires de la semaine en un seul tableau
- * @param {*} horairesCSV 
- * @returns 
+ * affiche les horaires d'une gare sous forme d'un tableau
  */
- function buildHoraires(horairesCSV) {
-      return horairesCSV.reduce((acc, current) => {
-      const gare = current.gare;
-      if (!acc[gare]) {
-          acc[gare] = [];
-      }
-      acc[gare].push(current);
-      return acc;
-      }, {});
-}
+function afficherHoraires(feature) {
+    const divHoraire = document.getElementById("horaires");
+    divHoraire.innerHTML = '';
 
-function buildSatisfaction(satisfactionCSV) {
-    return satisfactionCSV.reduce((acc, current) => {
-        const code_uic = current.CODE_UIC 
-        if (!acc[code_uic]) {
-            acc[code_uic] = [];
-        }
-        acc[code_uic].push(current);
-        return acc;
-    }, {});
-}
+    if (feature.properties.horaires) {
+        const lignes = Object.entries(feature.properties.horaires);
 
-/* gestion des gares et listes des gares */
+        const tableau = document.createElement("table");
+        tableau.classList.add("horaireTableau");
 
- function updateStationList(features) {
-    const stationSelect = document.getElementById("station-select");
-    stationSelect.innerHTML = ''; 
-  
-    features.forEach(f => {
-      const option = document.createElement('option');
-      option.value = JSON.stringify(f.geometry.coordinates);
-      option.textContent = f.properties.libelle;
-      stationSelect.appendChild(option);
-    });
-}
+        const thead = document.createElement("thead");
+        thead.innerHTML = `
+          <tr>
+              <th>Jour</th>
+              <th>Horaire normaux</th>
+              <th>Horaire Férié</th>
+          </tr>
+        `;
+        tableau.appendChild(thead);
+        
+        const tbody = document.createElement("tbody");
+         
+        lignes.forEach(([key, horaire]) => {
+          const ligne = document.createElement("tr");
 
-
-/* filtre */
- function handleDepartmentChange(department, geojsonData) {
-    if (geojsonLayer) {
-      map.removeLayer(geojsonLayer);
-    }
-  
-    const filteredData = {
-      type: "FeatureCollection",
-      features: department === "all"
-        ? resetMap()
-        : geojsonData.features.filter(f => f.properties.departemen === department)
-    };
-  
-    geojsonLayer = createGeoJsonLayer(filteredData);
-    geojsonLayer.addTo(map);
-  
-    const bounds = geojsonLayer.getBounds();
-    if (bounds.isValid()) {
-      map.fitBounds(bounds);
-    }
-  
-    updateStationList(filteredData.features);
-}
-
-
- function setupDepartmentOptions(geojsonData, departmentSelect) {
-    const departments = [...new Set(geojsonData.features.map(f => f.properties.departemen))].sort();
-    departments.forEach(dept => {
-      const option = document.createElement('option');
-      option.value = dept;
-      option.textContent = dept;
-      departmentSelect.appendChild(option);
-    });
-  }
-
-/* affichage */
- function selectGare(gare, geojsonData) {
-    const inputS = document.getElementById("gareSearch");
-    const formSearch = document.getElementById("gareForm");
-    
-    inputS.value = gare;
-  
-    const feature = geojsonData.features.find(f => f.properties.libelle.toLowerCase() === gare.toLowerCase());
-    if(feature){
-      affiche_tout(feature)
-    }
-  
-    formSearch.addEventListener("submit", () => e => e.preventDefault());
-  
-    inputS.value = "";
-    
-}
-
-async function drawGareSelected(feature) {
-    resetMap();
-    const coordinates = feature.geometry.coordinates;
-    gareSelected = L.circleMarker([coordinates[1], coordinates[0]], {
-        color: 'red',        
-        fillColor: 'red',    
-        fillOpacity: 0.8,    
-        radius: 8           
-    }).addTo(map);
-    hoverMakerName(gareSelected, feature);
-    map.setView([coordinates[1], coordinates[0]], 10);
-}
-  
-   function afficherNomGare(nomGare){
-      const nomGareDiv = document.getElementById("nomGare");
-  
-      if(nomGareDiv){
-          nomGareDiv.innerHTML = `<h2>${nomGare}</h2>`;
-      }
-  }
-  
-   function afficherMenu(){
-      const menu = document.getElementById("menu");
-      menu.style.display = "block";
-  
-      const menuLiens = document.querySelectorAll('#menu a');
-      menuLiens.forEach(link => {
-          link.addEventListener('click', e => {
-              e.preventDefault();
-              const target = link.getAttribute("data-target");
-              afficherSection(target);
-          })
-      })
-  }
-  
-   function afficherSection(target) {
-      const allSections = document.querySelectorAll(".content-section");
-      allSections.forEach(section => section.classList.remove("active"));
-  
-      const sectionOk = document.getElementById(target);
-      if (sectionOk) {
-        sectionOk.classList.add("active");
-      }
-  }
-  
-   function afficherHoraires(feature) {
-      const divHoraire = document.getElementById("horaires");
-      divHoraire.innerHTML = '';
-  
-      if (feature.properties.horaires) {
-          const lignes = Object.entries(feature.properties.horaires);
-
-          const tableau = document.createElement("table");
-          tableau.classList.add("horaireTableau");
-
-          const thead = document.createElement("thead");
-          thead.innerHTML = `
-            <tr>
-                <th>Jour</th>
-                <th>Horaire normaux</th>
-                <th>Horaire Férié</th>
-            </tr>
+          ligne.innerHTML = `
+              <td>${horaire.jour}</td>
+              <td>${horaire.horaireNormaux.join(' - ')}</td>
+              <td>${horaire.horaireFerie.join(' - ')}</td>
           `;
-          tableau.appendChild(thead);
-          
-          const tbody = document.createElement("tbody");
-           
-          lignes.forEach(([key, horaire]) => {
-            const ligne = document.createElement("tr");
 
-            ligne.innerHTML = `
-                <td>${horaire.jour}</td>
-                <td>${horaire.horaireNormaux.join(' - ')}</td>
-                <td>${horaire.horaireFerie.join(' - ')}</td>
-            `;
-
-            tbody.appendChild(ligne);
-          })
-
-
-          tableau.appendChild(tbody);
-          divHoraire.appendChild(tableau);
-      } else {
-          divHoraire.innerHTML = `<p>Horaires non disponibles.</p>`;
-      }
-  }
-
-function afficherSatisfaction(feature) {
-    const divSatisfaction = document.getElementById("satisfaction");
-    divSatisfaction.innerHTML = '';
-
-    if (feature.properties.satisfaction) {
-        const satisfaction = feature.properties.satisfaction;
-        satisfaction.forEach(([key, value]) => {
-          const div = document.createElement("div");
-          const circle = document.createElement("span");
-          circle.classList.add("cercleProgression");
-          circle.classList.add("circletext");
-
-          div.innerHTML = `<p>${key.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase())}</p>`;
-
-          if(value === undefined || value === "" || value === null || value === '-') {
-            circle.innerHTML = "?";
-            circle.style.background = `rgb(195, 192, 192)`
-          } else {
-            circle.classList.remove("noteInconnue");
-            const pourcentage = (value / 10) * 100;
-
-            let color;
-            if(value <= 3){
-                color = "#FF3B30";
-            }else if (value <= 7) {
-                color = "#FFCC00";
-            } else {
-                color = "#4CAF50";
-            }
-            circle.style.background = `conic-gradient(${color} ${pourcentage}%, #e0e0e0 ${pourcentage}%)`;
-            circle.innerText = `${value}`;
-          }
-          div.appendChild(circle)
-          divSatisfaction.appendChild(div);
+          tbody.appendChild(ligne);
         })
 
+
+        tableau.appendChild(tbody);
+        divHoraire.appendChild(tableau);
     } else {
-        divSatisfaction.innerHTML = `<p>Informations de satisfaction non disponibles.</p>`;
+        divHoraire.innerHTML = `<p>Horaires non disponibles.</p>`;
     }
 }
 
 
-function formatAdress(adresse) {
-    let adressComplete = '';
 
-    if(adresse.number) {
-        adressComplete += adresse.number + ', '
-    }
+//accessibilité
+/**
+ * recupère les accessibilités des gares.
+ *  
+ */
+async function loadAccessibilites() {
+    const response = await fetch("../data/equipements-accessibilite-en-gares.csv");
+    const text = await response.text();
 
-    if(adresse.road) {
-        adressComplete += adresse.road + ', '
-    }
+    const data = parseCSVToObject(text, ";");
 
-    if(adresse.county) {
-        adressComplete += adresse.county + ', '
-    }
-
-    if(adresse.postcode) {
-        adressComplete += adresse.postcode + ', '
-    }
-
-    if(adresse.country) {
-        adressComplete += adresse.country
-    }
-
-    if(adressComplete.startsWith(',')) {
-        adressComplete = adressComplete.slice(0, -2);
-    }
-
-    return adressComplete
+    return buildAccessibilite(data);
 }
 
-function afficheInfo(feature) {
-    const divStatus = document.getElementById("status");
-    divStatus.innerHTML = '';
-    let classStatus;
-    let cercleStatus;
-    let status;
+/**
+ * Met en forme l'objet des accessibilités des gares: réunis les accessibilité par gare
+ */
+function buildAccessibilite(accessibilitesCSV) {
+    return accessibilitesCSV.reduce((acc, current)  => {
+        const gare = current.UIC;
 
-    const horaires = feature?.properties?.horaires;
-
-    switch (isGareOpen(horaires)) {
-        case -1:
-        case undefined:
-            status = 'Ouverture Indeterminée';
-            cercleStatus = 'cercleInconnu';
-            classStatus = 'inconnuStatus';  
-            break;
-        case true:
-            status = 'Ouvert';
-            cercleStatus = 'cercleOuvert';
-            classStatus = 'ouvertStatus';  
-            break;
-        case false:
-            status = 'Fermée';
-            cercleStatus = 'cercleFerme';
-            classStatus = 'fermeeStatus';  
-            break;
-        default:
-            status = 'Ouverture Indeterminée';
-            cercleStatus = 'cercleInconnu';
-            classStatus = 'inconnuStatus';  
-            break;
-    }
-    divStatus.className = classStatus;
-    divStatus.innerHTML += `
-        <span id="${cercleStatus}"></span>
-        <p>${status}</p>`;
-
-
-    const divAdress = document.getElementById("adresse");
-    divAdress.innerHTML = '';
-
-    if(feature.properties.address){
-        const adr = formatAdress(feature.properties.address)
-        divAdress.innerHTML += `<span><img src="./img/outil.png" alt=""></span>`;
-        divAdress.innerHTML += `<p>${adr}</p>`;
-    }
+        if (!acc[gare]) {
+            acc[gare] = [];
+        }
+        acc[gare].push(current.accessibilite);
+        return acc;
+    }, {})
 
 }
 
+/**
+ * Ajoute les informations d'accessibilité aux gares du GeoJSON.
+ *
+ * Associe les données d'accessibilité à chaque gare en utilisant le code UIC.
+ */
+function attachAccessibiliteToStations(geojsonData, accessibilites) {
+    geojsonData.features.forEach(feature => {
+        const uic = feature.properties.code_uic;
+        const gare = accessibilites[uic];
 
+        if(gare) {
+            feature.properties.accessibilites = Object.values(gare);
+        }
+    })
+
+}
+
+/**
+ * Affiche les informations d'accessibilité d'une gare.
+ *
+ * Génère une liste avec des icônes et des descriptions correspondant aux équipements d'accessibilité
+ * disponibles dans la gare sélectionnée.
+ */
 function afficheAccessibilites(feature) {
     const divAcc = document.getElementById("accessibilite");
     divAcc.innerHTML = '';
-
+  
     if (feature.properties.accessibilites && feature.properties.accessibilites.length > 0) {
         const liste = document.createElement("ul");
-
+  
         feature.properties.accessibilites.forEach(accessibilite => {
             const item = document.createElement("li");
             
@@ -627,7 +536,7 @@ function afficheAccessibilites(feature) {
             const icon = document.createElement("img");
             icon.alt = accessibilite;
             icon.className = "icon-accessibilite";
-
+  
             // Attribution des icônes selon le type d'accessibilité
             switch (accessibilite) {
                 case 'Toilettes':
@@ -664,21 +573,163 @@ function afficheAccessibilites(feature) {
                     icon.src = './icons/default.png';
                     break;
             }
-
+  
             item.appendChild(icon);
             const text = document.createElement("span");
             text.textContent = accessibilite;
             item.appendChild(text);
-
+  
             liste.appendChild(item);
         });
-
+  
         divAcc.appendChild(liste);
     } else {
         divAcc.innerHTML = `<p>Aucune information d'accessibilité disponible pour cette gare.</p>`;
     }
 }
 
+
+//satisfaction
+/**
+ * recupère les satisfactions des gares.
+ *  
+ */
+async function loadSatisfaction() {
+    const response = await fetch("../data/satisfactions.csv");
+    const text = await response.text();
+
+    const data = parseCSVToObject(text, ",");
+    return buildSatisfaction(data);
+}
+
+/**
+ * Met en forme l'objet des satisfactions des gares
+ * 
+ */
+function buildSatisfaction(satisfactionCSV) {
+    return satisfactionCSV.reduce((acc, current) => {
+        const code_uic = current.CODE_UIC 
+        if (!acc[code_uic]) {
+            acc[code_uic] = [];
+        }
+        acc[code_uic].push(current);
+        return acc;
+    }, {});
+}
+
+/**
+ * construit un objet par gare contennat les notes de satisfactions, puis l'attache à la gare concernée en rajoutant la propriété "satisfaction"
+ */
+function attachSatisfactionToStations(geojsonData, satisfaction) {
+  geojsonData.features.forEach(feature => {
+      const uic = feature.properties.code_uic;
+      const gareSatisfaction = satisfaction[uic];
+
+      if (gareSatisfaction && gareSatisfaction.length > 0) {
+          const satisfactionData = gareSatisfaction[0]; 
+          const obj = {
+            satisfaction_global: satisfactionData.satisfaction_global,
+            orientation_client: satisfactionData.orientation_client,
+            confort_attente: satisfactionData.confort_attente,
+            bien_etre_en_gare: satisfactionData.bien_etre_en_gare
+              
+          };
+          feature.properties.satisfaction = Object.entries(obj);
+      }
+  });
+} 
+
+/**
+ * Mise en forme de l'affichage des satisfaction dans sa section
+ */
+function afficherSatisfaction(feature) {
+    const divSatisfaction = document.getElementById("satisfaction");
+    divSatisfaction.innerHTML = '';
+  
+    if (feature.properties.satisfaction) {
+        const satisfaction = feature.properties.satisfaction;
+        satisfaction.forEach(([key, value]) => {
+          const div = document.createElement("div");
+          const circle = document.createElement("span");
+          circle.classList.add("cercleProgression");
+          circle.classList.add("circletext");
+        
+          //remplace tous les "_" par un espace puis met en majucule la première lettre de la chaîne
+          div.innerHTML = `<p>${key.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase())}</p>`;
+  
+          if(value === undefined || value === "" || value === null || value === '-') {
+            circle.innerHTML = "?";
+            circle.style.background = `rgb(195, 192, 192)`
+          } else {
+            circle.classList.remove("noteInconnue");
+            const pourcentage = (value / 10) * 100;
+            
+            //choix de la oculeu en fonction de la note
+            let color;
+            if(value <= 3){
+                color = "#FF3B30";
+            }else if (value <= 7) {
+                color = "#FFCC00";
+            } else {
+                color = "#4CAF50";
+            }
+            circle.style.background = `conic-gradient(${color} ${pourcentage}%, #e0e0e0 ${pourcentage}%)`;
+            circle.innerText = `${value}`;
+          }
+          div.appendChild(circle)
+          divSatisfaction.appendChild(div);
+        })
+  
+    } else {
+        divSatisfaction.innerHTML = `<p>Informations de satisfaction non disponibles.</p>`;
+    }
+}
+
+
+//autre affchage
+/**
+ * Affiche le nom de la gare dans sa div
+ */
+function afficherNomGare(nomGare){
+    const nomGareDiv = document.getElementById("nomGare");
+
+    if(nomGareDiv){
+        nomGareDiv.innerHTML = `<h2>${nomGare}</h2>`;
+    }
+}
+
+/**
+ * Affiche le menu présentant les sections : informations, horaires, accessibilityés et satisfaction
+ */
+  function afficherMenu(){
+    const menu = document.getElementById("menu");
+    menu.style.display = "block";
+
+    const menuLiens = document.querySelectorAll('#menu a');
+    menuLiens.forEach(link => {
+        link.addEventListener('click', e => {
+            e.preventDefault();
+            const target = link.getAttribute("data-target");
+            afficherSection(target);
+        })
+    })
+}
+  
+/**
+ * Affiche une section spécifique en fonction de sa cible (target)
+ *
+ * Cette fonction désactive toutes les sections en supprimant la classe "active", 
+ * puis active la section correspondante à l'identifiant donné (target) en lui ajoutant la classe "active"
+ */
+function afficherSection(target) {
+    const allSections = document.querySelectorAll(".content-section");
+    allSections.forEach(section => section.classList.remove("active"));
+
+    const sectionOk = document.getElementById(target);
+    if (sectionOk) {
+    sectionOk.classList.add("active");
+    }
+}
 
 function affiche_tout(feature) {
     drawGareSelected(feature);
@@ -689,6 +740,11 @@ function affiche_tout(feature) {
     afficheAccessibilites(feature);
     afficherSatisfaction(feature);
 }
+
+
+
+
+
 
 
 

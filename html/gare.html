@@ -3,24 +3,19 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Projet Gare - Recherche par Département et Gare</title>
+  <title>Gare SNCF</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-  <!-- <script type="module" src="./js/map.js"></script>
-  <script type="module" src="./js/data.js"></script>
-  <script type="module" src="./js/filter.js"></script>
-  <script type="module" src="./js/affichage.js"></script>
-  <script type="module" src="./js/gare.js"></script> -->
-  <script src="./js/gare.js"></script>
-  <script src="./js/utils.js"></script>
-  <script defer src="./js/navbar.js"></script>
+  <script src="../js/gare.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/navbar.js"></script>
 
   
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../css/style.css">
 
 </head>
 
@@ -43,11 +38,11 @@
             <!-- <label for="department-select">Choisir un département : </label> -->
              
             <select id="department-select">
-              <option value="" disabled selected>Choisissez un département</option>
+              <option value="" disabled selected>Département</option>
               <option value="all">Tous</option>
             </select>
             <select id="station-select">
-              <option value="" disabled selected>Choisissez une gare</option>
+              <option value="" disabled selected>Gare</option>
   
             </select>
           </div>

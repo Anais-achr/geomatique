@@ -24,23 +24,26 @@ body {
 }
 
 #map {
-  width: 70%;
+  width: 65%;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   text-align: center;
   position: relative;
   padding: 20px;
+  z-index: 1;
 }
 
 #informations {
-  width: 30%;
+  width: 35%;
   padding: 20px;
+  height: 100%;
   border-left: 1px solid rgb(68, 67, 67);
   border-radius: 10px;
-  z-index: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  z-index: 2;
+  position: relative;
+  gap: 20px;
 }
 
 #informations::before {
@@ -50,7 +53,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('./img/train.jpg') no-repeat center center;
+  background: url('../img/train.jpg') no-repeat center center;
   background-size: cover;
   filter: blur(5px);
   z-index: -1;
@@ -75,72 +78,94 @@ body {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 } 
 
-#premiere-partie {
+.premiere-partie {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   height: 30%;
-  margin: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  position: relative;
+  width: 100%;
+  margin: 15px;
+  gap: 5px;
 }
 
-
-  .deuxieme-partie{
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    justify-content: space-around;
-    height: 70%;
-  }
+.deuxieme-partie{
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  justify-content: space-around;
+  height: 70%;
+  width: 100%;
+  gap: 10px;
+}
 
   #menu {
     display: none;
   }
 
   #menu {
-    height: 20%;
-    padding: 5px; 
-    box-sizing: border-box;
-    z-index: 998;
+    margin: 10px 0;
+    z-index: 2;
     position: relative;
-  }
 
-  #menu ul {
+  }
+  
+ #menu ul {
     list-style-type: none;
-    padding: 0;
     display: flex;
     justify-content: space-between;
-    top: 0;
-
-    /* flex-direction: column;
-    height: 100%; */
+    align-items: center;
+    width: 100%;
   }
 
-
+  #menu li {
+    height: 100%;
+  }
+  
   #menu li a {
     text-decoration: none;
     color: black;
     display: block;
-    padding: 10px 15px;
-    background-color: rgb(220,200,300);
-    border-radius: 4px;
+    border-radius: 8px; 
     text-align: center;
+    background-color: #bd9acc;
     text-transform: lowercase;
     font-variant: small-caps;
-    font-weight: bold; 
-    margin: 0 10px;
+    font-weight: bold;
+    padding: 10px 15px; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
+  
+  @media (max-width: 600px) {
+    #menu li a {
+      padding: 4px 8px; 
+      margin: 1px;
+    }
+  }
+  
+  @media (min-width: 601px) and (max-width: 1024px) {
+    #menu li a {
+      padding: 6px 12px; 
+      margin: 1px;
+    }
+  }
+  
+  @media (min-width: 1025px) {
+    #menu li a {
+      margin: 1px;
+      padding: 5px; 
+    }
+  }
+  
   #menu li a:hover {
-    background-color: #ccc;
+    background-color: #ccc; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
   }
-
   #content {
     flex: 1;
     position: relative;
     top: 0;
+    
   }
 
   .content-section {
@@ -148,21 +173,36 @@ body {
     opacity: 0;
     width: 100%;
     top: 0;
-    height: 500px;
     height: 100%;
+    display: flex; 
+    flex-direction: column;;
+    align-items: center; 
+  }
+
+  .content-section#info {
+    justify-content: space-around;
+
   }
 
   .content-section.active {
     opacity: 1; 
-    z-index: 1; 
+    z-index: 2; 
     transition: opacity 0.3s ease-in-out; 
   } 
 
   #nomGare {
     height: 10%;
     margin: 5px;
-    color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
     width: 100%;
+    text-align: center;
+  }
+
+  .searchContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
   #gareForm {
     display: flex;
@@ -170,6 +210,15 @@ body {
     align-items: center;     
     justify-content: center;
     position: relative;
+    margin: 10px;
+  }
+
+  #controls {
+    display: flex;
+    align-items: center;     
+    justify-content: center;
+    width: 70%;
+    gap: 10px;
   }
 
   #resultGareSearch {
@@ -201,12 +250,9 @@ body {
     display: flex;
     flex-direction: column;
     text-align: center;
-    /* justify-content: space-around; */
-    gap: 20px;
+    
     background-color: rgba(216, 216, 216, 0.281);
-  }
 
-  #info div {
   }
 
   #info div:last-child {
@@ -215,12 +261,12 @@ body {
 
 
   
-  #horaires {
+  .content-section#horaires {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
+    align-items: center;
     width: 100%;
     height: 100%;
-    max-width: 600px;
     position: relative;
     background-color: rgba(216, 216, 216, 0.281);
 
@@ -250,9 +296,7 @@ body {
   
 
   #accessibilite {
-      height: 100%;
       background-color: rgba(216, 216, 216, 0.281);
-      top: 0;
       overflow-y: scroll;
     }
 
@@ -563,25 +607,26 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
-  
+  align-items: left;
 }
 
 #satisfaction div {
-  background-color: rgba(169, 167, 167, 0.281);
-  margin: 0;
-  padding: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 200px auto;
+  gap: 20px;
+  align-items: center; 
+  justify-content: start; 
 }
 
+
 #satisfaction div p {
-  margin: 0;
+  text-align: left;
 }
+
 .cercleProgression {
   border-radius: 50%;
-  width: 35px;
-  height: 35px;
+  width: 40px;
+  height: 40px;
   border: 3px solid #20201f;
   z-index: 1001;
   background-color: rgb(88, 88, 88);
