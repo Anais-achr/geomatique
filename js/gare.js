@@ -104,7 +104,7 @@ function setupStationSelect(geojsonData) {
 }
 
 /* map */
- function initializeMap() {
+function initializeMap() {
     map = L.map('map', {
       center: [48.4, 2.5],
       zoom: 6
@@ -113,10 +113,9 @@ function setupStationSelect(geojsonData) {
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
       subdomains: 'abcd',
-      maxZoom: 20
+      maxZoom: 20,
+      noWrap: true 
     }).addTo(map);
-
-    
 }
 
 function resetMap() {

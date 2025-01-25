@@ -1,159 +1,99 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
   background-color: #f3e5f5;
   margin: 0;
   padding: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
-/* Section Hero */
-/* Section Hero */
-.hero {
+
+#doc {
+  display: flex; 
+  font-family: 'Roboto', sans-serif;
+  height: 90%;
+  width: 100%;
+  position: relative;
+  border: none;
+}
+
+#map {
+  width: 70%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  position: relative;
+  padding: 20px;
+}
+
+#informations {
+  width: 30%;
+  padding: 20px;
+  border-left: 1px solid rgb(68, 67, 67);
+  border-radius: 10px;
+  z-index: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  height: 100vh;
-  color: white;
-  padding: 20px;
-  background: url('./img/train.jpg') no-repeat center center/cover; 
-  position: relative;
 }
 
-.hero::before {
+#informations::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('./img/train.jpg') no-repeat center center;
+  background-size: cover;
+  filter: blur(5px);
+  z-index: -1;
+}
+
+
+#informations::after {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(50, 20, 80, 0.7);
-  z-index: 1;
+  background: linear-gradient(to bottom, rgba(209, 197, 179, 0.84), rgba(200, 197, 197, 0.5));
+  z-index: -1;
 }
-
-.hero h1,
-.hero p,
-.hero .btn {
+  
+  
+#informations .content {
   position: relative;
   z-index: 2;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+} 
+
+#premiere-partie {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 30%;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
-
-.hero h1 {
-  font-size: 2.5em;
-  margin-bottom: 20px;
-}
-
-.hero p {
-  font-size: 1.2em;
-  margin-bottom: 30px;
-}
-
-.hero .btn {
-  display: inline-block;
-  padding: 10px 20px;
-  background-color: #ffcc00;
-  color: #321450;
-  font-size: 1.2em;
-  font-weight: bold;
-  text-transform: uppercase;
-  text-decoration: none;
-  border-radius: 5px;
-  transition: all 0.3s ease;
-}
-
-.hero .btn:hover {
-  background-color: #e6b800;
-  color: white;
-}
-
-/* Footer */
-footer {
-  text-align: center;
-  padding: 10px 0;
-  background-color: #321450;
-  color: white;
-}
-
-#doc {
-    display: flex; 
-    gap: 2px;
-    font-family: 'Roboto', sans-serif;
-  }
-  
-  #map {
-    flex: 2.5;
-    width: 60%;
-    height: 100vh; 
-    border: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    position: relative;
-    padding: 20px;
-}
-  #premiere-partie {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    height: 200px;
-    margin: 10px;
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    position: relative;
-  }
-
-  
-
-  #informations {
-    height: 100vh; 
-    flex: 1;
-    text-align: center;
-    position: relative;
-    padding: 20px;
-    /* border: 2px solid rgba(0, 0, 0, 0.1); */
-    border-left: 1px solid rgb(68, 67, 67);
-    border-radius: 10px;
-    z-index: 0;
-  }
-
-  #informations::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to bottom, rgba(209, 197, 179, 0.84), rgba(200, 197, 197, 0.5));
-    z-index: -1;
-  }
-  
-  
-  #informations::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('./img/train.jpg') no-repeat center center;
-    background-size: cover;
-    filter: blur(5px);
-    z-index: -1;
-  }
-  
-  #informations .content {
-    position: relative;
-    z-index: 2;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  } 
-
 
 
   .deuxieme-partie{
     display: flex;
-    top: 0;
-    gap: 10px;
-    padding: 10px;
-    height: 400px;
+    flex-direction: column;
+    position: relative;
+    justify-content: space-around;
+    height: 70%;
   }
 
   #menu {
@@ -161,23 +101,22 @@ footer {
   }
 
   #menu {
+    height: 20%;
     padding: 5px; 
     box-sizing: border-box;
-    margin-top: 20px; 
-    top: 50px;
     z-index: 998;
     position: relative;
-    height: 250px;
   }
 
   #menu ul {
     list-style-type: none;
     padding: 0;
-    margin: 0;
     display: flex;
-    flex-direction: column;
-    justify-content: space-between; 
-    height: 100%;
+    justify-content: space-between;
+    top: 0;
+
+    /* flex-direction: column;
+    height: 100%; */
   }
 
 
@@ -185,13 +124,14 @@ footer {
     text-decoration: none;
     color: black;
     display: block;
-    padding: 10px;
+    padding: 10px 15px;
     background-color: rgb(220,200,300);
     border-radius: 4px;
     text-align: center;
     text-transform: lowercase;
     font-variant: small-caps;
     font-weight: bold; 
+    margin: 0 10px;
   }
   #menu li a:hover {
     background-color: #ccc;
@@ -200,14 +140,16 @@ footer {
   #content {
     flex: 1;
     position: relative;
-    height: 300px;
-    max-height: 300px; 
+    top: 0;
   }
 
   .content-section {
     position: absolute;
     opacity: 0;
     width: 100%;
+    top: 0;
+    height: 500px;
+    height: 100%;
   }
 
   .content-section.active {
@@ -216,16 +158,12 @@ footer {
     transition: opacity 0.3s ease-in-out; 
   } 
 
-  #content #nomGare {
+  #nomGare {
+    height: 10%;
+    margin: 5px;
     color: rgb(255, 255, 255);
-    text-align: center;
     width: 100%;
-    justify-content: center;
-    padding: 0;
-    position: relative;
-    top: -20px;
-    left: -30px;
-}
+  }
   #gareForm {
     display: flex;
     flex-direction: column;
@@ -263,13 +201,12 @@ footer {
     display: flex;
     flex-direction: column;
     text-align: center;
-    gap: 10px;
+    /* justify-content: space-around; */
+    gap: 20px;
     background-color: rgba(216, 216, 216, 0.281);
-    height: 250px;
   }
 
   #info div {
-    margin-bottom: 20px;
   }
 
   #info div:last-child {
@@ -282,7 +219,6 @@ footer {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    max-height: 250px;
     height: 100%;
     max-width: 600px;
     position: relative;
@@ -317,7 +253,7 @@ footer {
       height: 100%;
       background-color: rgba(216, 216, 216, 0.281);
       top: 0;
-      margin-top: 50px;
+      overflow-y: scroll;
     }
 
     #accessibilite ul {
@@ -327,7 +263,6 @@ footer {
 
     #accessibilite ul>li {
       background-color: #662483;
-      margin: 2px;
     }
 
 
@@ -423,77 +358,7 @@ footer {
 
 
 
-/* Barre de navigation */
-#sncf {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 20px;
-  background: linear-gradient(to right, #d9042b, #662483, #321450); ;
-  color: white;
-  font-family: Arial, sans-serif;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
 
-/* Logo */
-#sncf .logo img {
-  height: 60px; 
-  max-height: 100%;
-  width: auto; 
-}
-
-/* Navigation */
-#sncf nav ul {
-  list-style: none;
-  display: flex;
-  margin: 0;
-  padding: 0;
-}
-
-#sncf nav ul li {
-  margin: 0 15px;
-}
-
-#sncf nav ul li a {
-  text-decoration: none;
-  color: white;
-  font-size: 16px;
-  transition: color 0.3s ease;
-}
-
-#sncf nav ul li a:hover {
-  color: #ffcc00;
-}
-
-/* Barre de recherche */
-.search-container {
-  display: flex;
-}
-
-.search-container input[type="text"] {
-  padding: 5px 10px;
-  border: none;
-  border-radius: 5px;
-  font-size: 14px;
-}
-
-.search-container button {
-  background: white;
-  border: none;
-  padding: 5px 10px;
-  margin-left: 5px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  color: #363795;
-  font-weight: bold;
-  transition: all 0.3s ease;
-}
-
-.search-container button:hover {
-  background: #ffcc00;
-  color: white;
-}
 
 #accessibilite ul {
   list-style-type: none;
@@ -694,7 +559,6 @@ footer {
   height: 100%;
   background-color: rgba(216, 216, 216, 0.281);
   top: 0;
-  margin-top: 50px;
   text-align: left;
   display: flex;
   flex-direction: column;
@@ -704,8 +568,8 @@ footer {
 
 #satisfaction div {
   background-color: rgba(169, 167, 167, 0.281);
-  margin: 2px;
-  padding: 15px;
+  margin: 0;
+  padding: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -716,8 +580,8 @@ footer {
 }
 .cercleProgression {
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 35px;
+  height: 35px;
   border: 3px solid #20201f;
   z-index: 1001;
   background-color: rgb(88, 88, 88);

@@ -1,0 +1,79 @@
+/* Barre de navigation */
+#navbar {
+    height: 10%; 
+    position: relative;
+  }
+  
+  #sncf {
+    top: 0;
+    left: 0;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to right, #d9042b, #662483, #321450);
+    color: white;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+  }
+  
+  /* Logo */
+  #sncf .logo img {
+    height: 60px; 
+    max-height: 100%;
+    width: auto; 
+  }
+  
+  /* Navigation */
+  #sncf nav ul {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+  }
+  
+  #sncf nav ul li {
+    /* margin: 0 15px; */
+  }
+  
+  #sncf nav ul li a {
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+    transition: color 0.3s ease;
+  }
+  
+  #sncf nav ul li a:hover {
+    color: #ffcc00;
+  }
+  
+  /* Barre de recherche */
+  .search-container {
+    display: flex;
+  }
+  
+  .search-container input[type="text"] {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+  
+  .search-container button {
+    background: white;
+    border: none;
+    padding: 5px 10px;
+    margin-left: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #363795;
+    font-weight: bold;
+    transition: all 0.3s ease;
+  }
+  
+  .search-container button:hover {
+    background: #ffcc00;
+    color: white;
+  }
